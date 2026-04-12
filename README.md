@@ -16,7 +16,26 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Food search (Anthropic)
+
+Copy `.env.example` to `.env.local` (a starter `.env.local` may already exist) and set `ANTHROPIC_API_KEY` from [Anthropic Console](https://console.anthropic.com/). Food lookup uses the server route `POST /api/food-search` (no API keys in the browser).
+
+#### Troubleshooting: “Server is not configured for food search (missing ANTHROPIC_API_KEY)”
+
+That message means the **server** process does not see a non-empty `ANTHROPIC_API_KEY`. Typical fixes:
+
+1. Put the key in **`.env.local`** at the repo root (not `NEXT_PUBLIC_*`; keep it server-only).
+2. **Restart** `npm run dev` after creating or editing `.env.local`.
+3. Confirm the value is not blank and has no stray quotes.
+4. On **Vercel**, add `ANTHROPIC_API_KEY` under **Project → Settings → Environment Variables** for the environment you deploy (Production / Preview), then redeploy.
+
+### Tests
+
+```bash
+npm test
+```
+
+End-to-end checks against the real Anthropic API are optional: run the app with a valid key and use the Eat tab to search a Singapore dish (for example “Chicken Rice”) and confirm the preview looks reasonable before logging.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
