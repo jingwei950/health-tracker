@@ -30,27 +30,27 @@ export function bmiInfo(b: number): BmiInfo {
     return {
       label: "Underweight",
       band: "bb",
-      color: "#60a5fa",
+      color: "var(--status-info)",
       tooltip: "Consider increasing caloric intake with nutrient-dense foods.",
     };
   if (b < 25)
     return {
       label: "Healthy",
       band: "bgg",
-      color: "#34d399",
+      color: "var(--status-success)",
       tooltip: "Great work! Maintain your current habits.",
     };
   if (b < 30)
     return {
       label: "Overweight",
       band: "ba",
-      color: "#fbbf24",
+      color: "var(--status-warning)",
       tooltip: "A modest calorie deficit of 300–500 kcal/day can help.",
     };
   return {
     label: "Obese",
     band: "br",
-    color: "#f87171",
+    color: "var(--status-danger)",
     tooltip: "Consult a healthcare professional for a personalised plan.",
   };
 }
@@ -125,9 +125,9 @@ export function macroProgressRows(t: MacroTotals, goals: Goals): MacroRow[] {
       unit: "kcal",
       color: "var(--primary)",
     },
-    { label: "Protein", value: t.protein, goal: goals.protein, unit: "g", color: "#34d399" },
-    { label: "Carbs", value: t.carbs, goal: goals.carbs, unit: "g", color: "#60a5fa" },
-    { label: "Fat", value: t.fat, goal: goals.fat, unit: "g", color: "#fbbf24" },
+    { label: "Protein", value: t.protein, goal: goals.protein, unit: "g", color: "var(--chart-1)" },
+    { label: "Carbs", value: t.carbs, goal: goals.carbs, unit: "g", color: "var(--chart-3)" },
+    { label: "Fat", value: t.fat, goal: goals.fat, unit: "g", color: "var(--chart-5)" },
   ];
 }
 
