@@ -16,7 +16,7 @@ export function SleepScoreTrend({ sleep }: { sleep: SleepEntry[] }) {
     const bh = Math.round((sc / 100) * 54);
     const x = ox + i * (bw + gap);
     const y = h - 10 - bh;
-    const c = sc >= 80 ? "#34d399" : sc >= 60 ? "#fbbf24" : "#f87171";
+    const c = sc >= 80 ? "var(--status-success)" : sc >= 60 ? "var(--status-warning)" : "var(--status-danger)";
     return (
       <g key={e.id}>
         <rect

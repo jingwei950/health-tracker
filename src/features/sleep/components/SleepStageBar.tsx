@@ -3,10 +3,10 @@
 import type { SleepEntry } from "@/lib/health-track/types";
 
 const cs: Record<string, string> = {
-  deep: "#1d4ed8",
-  core: "#6366f1",
-  rem: "#8b5cf6",
-  awake: "#94a3b8",
+  deep: "var(--chart-5)",
+  core: "var(--chart-3)",
+  rem: "var(--chart-1)",
+  awake: "var(--muted-foreground)",
 };
 
 export function SleepStageBar({ e }: { e: SleepEntry }) {
@@ -15,7 +15,7 @@ export function SleepStageBar({ e }: { e: SleepEntry }) {
       key={k}
       style={{
         width: `${((v as number) / e.totalHours) * 100}%`,
-        background: cs[k] ?? "#888",
+        background: cs[k] ?? "var(--muted)",
         height: "100%",
       }}
     />
@@ -24,7 +24,7 @@ export function SleepStageBar({ e }: { e: SleepEntry }) {
     <span key={k}>
       <span
         className="mr-0.5 inline-block size-[7px] rounded-[2px] align-middle"
-        style={{ background: cs[k] ?? "#888" }}
+        style={{ background: cs[k] ?? "var(--muted)" }}
       />
       {k} {v as number}h{" "}
     </span>

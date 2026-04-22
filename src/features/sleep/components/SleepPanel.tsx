@@ -7,11 +7,16 @@ import { SleepScoreTrend } from "./SleepScoreTrend";
 import { SleepStageBar } from "./SleepStageBar";
 
 function SleepBadge({ score }: { score: number }) {
+  const getStyle = (statusVar: string) => ({
+    background: `color-mix(in oklch, ${statusVar} 12%, transparent)`,
+    color: statusVar,
+  });
+
   if (score >= 80)
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-        style={{ background: "rgba(52,211,153,.12)", color: "#34d399" }}
+        style={getStyle("var(--status-success)")}
       >
         Good
       </span>
@@ -20,7 +25,7 @@ function SleepBadge({ score }: { score: number }) {
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-        style={{ background: "rgba(251,191,36,.12)", color: "#fbbf24" }}
+        style={getStyle("var(--status-warning)")}
       >
         Fair
       </span>
@@ -28,7 +33,7 @@ function SleepBadge({ score }: { score: number }) {
   return (
     <span
       className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-      style={{ background: "rgba(248,113,113,.12)", color: "#f87171" }}
+      style={getStyle("var(--status-danger)")}
     >
       Poor
     </span>
@@ -51,7 +56,7 @@ export function SleepPanel({
   onRemove: (id: number) => void;
 }) {
   return (
-    <div className="p-3">
+    <div className="p-3 md:p-5">
       <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3">
         <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Import sleep data
@@ -60,7 +65,7 @@ export function SleepPanel({
           Paste Apple Watch sleep JSON
         </label>
         <textarea
-          className="w-full resize-y rounded-md border border-input bg-muted px-2.5 py-[7px] font-mono text-[11px] text-foreground outline-none min-h-[70px] focus:border-primary"
+          className="w-full resize-y rounded-md border border-border bg-muted px-2.5 py-[7px] font-mono text-[11px] text-foreground outline-none min-h-[70px] focus:border-primary"
           value={sj}
           onChange={(e) => onSj(e.target.value)}
           placeholder='{"date":"2026-04-11","total_hours":7.2,"stages":{"core":2.8,"deep":1.1,"rem":1.9,"awake":1.4},"heart_rate_avg":58}'
@@ -69,9 +74,9 @@ export function SleepPanel({
           <div
             className="mt-1.5 rounded-md border px-3 py-2 text-xs"
             style={{
-              background: "rgba(248,113,113,.12)",
-              borderColor: "#f87171",
-              color: "#f87171",
+              background: "color-mix(in oklch, var(--status-danger) 12%, transparent)",
+              borderColor: "var(--status-danger)",
+              color: "var(--status-danger)",
             }}
           >
             {se}
@@ -131,7 +136,7 @@ export function SleepPanel({
                     style={{
                       width: `${sc}%`,
                       background:
-                        sc >= 80 ? "#34d399" : sc >= 60 ? "#fbbf24" : "#f87171",
+                        sc >= 80 ? "var(--status-success)" : sc >= 60 ? "var(--status-warning)" : "var(--status-danger)",
                     }}
                   />
                 </div>
