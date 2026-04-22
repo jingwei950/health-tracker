@@ -49,7 +49,7 @@ export function GoalsDialog({
                 id={`g-${k}`}
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-md border border-input bg-muted px-2.5 py-[7px] text-[13px] text-foreground outline-none transition-colors focus:border-primary"
+                className="mt-1 w-full rounded-md border border-border bg-muted px-2.5 py-[7px] text-[13px] text-foreground outline-none transition-colors focus:border-primary"
                 value={draft[k]}
                 onChange={(e) =>
                   setDraft((d) => ({
