@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Chakra_Petch, IBM_Plex_Mono } from "next/font/google";
 import "@/styles/globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fontSans = Chakra_Petch({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontMono = IBM_Plex_Mono({
   subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -26,10 +29,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      className={`${fontSans.variable} ${fontMono.variable} ht-font-serif-var h-full`}
     >
-      <body className={`${geistSans.className} min-h-full flex flex-col antialiased`}>
-        {children}
+      <body
+        className="font-sans min-h-full flex flex-col antialiased"
+      >
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
