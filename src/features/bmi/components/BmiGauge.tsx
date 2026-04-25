@@ -1,7 +1,7 @@
 "use client";
 
 import { PieChart, Pie } from "recharts";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, type ChartConfig } from "@/components/ui/Chart";
 
 const BANDS = [
   { name: "underweight", value: 8.5, fill: "var(--status-info)" }, // 10–18.5
