@@ -11,17 +11,17 @@ This project runs **Next.js 16.2.3** with **React 19.2.4**. APIs, conventions, a
 ## Commands
 
 ```bash
-npm run dev      # start dev server on :3000
-npm run build    # production build
-npm run lint     # eslint (flat config via eslint-config-next)
-npm test         # vitest run (single pass, jsdom)
+bun dev          # start dev server on :3000
+bun run build    # production build
+bun run lint     # eslint (flat config via eslint-config-next)
+bun test         # vitest run (single pass, jsdom)
 ```
 
 Run a single test file or pattern:
 
 ```bash
-npx vitest run src/lib/health-track/nutrition.test.ts
-npx vitest run -t "parses food response"
+bunx vitest run src/lib/health-track/nutrition.test.ts
+bunx vitest run -t "parses food response"
 ```
 
 Tests live alongside sources as `*.test.ts` / `*.test.tsx` and run under jsdom with `@testing-library/jest-dom` matchers (see `vitest.config.ts`, `vitest.setup.ts`). The `@/` alias resolves to `src/` in both Next and Vitest.
@@ -35,7 +35,7 @@ Single-page client app backed by one server route.
 - **`src/app/api/food-search/route.ts`** is the only backend surface. It validates the request, calls Anthropic `/v1/messages`, extracts text blocks, and hands the raw text to `parseFoodResponseText` in `src/lib/health-track/parse-food-response.ts`. Errors are mapped to JSON `{ error }` with appropriate status (400/502/503). The client in `health-track-app.tsx` rewrites the `missing ANTHROPIC_API_KEY` message into user-facing setup instructions.
 - **`src/lib/health-track/`** holds framework-free logic: `types.ts` (shared shapes — note the terse field names like `cal`/`pro`/`carb`/`fat`/`srv`), `nutrition.ts` (totals/macros math), `parse-food-response.ts` (system prompt + JSON extraction from model output). These are the primary unit-test targets.
 - **`src/components/health-track/map-food.ts`** bridges the API shape (`FoodSearchResult`) to the app's `FoodItem` shape. Keep the two shapes decoupled — `FoodSearchResult` mirrors what the model emits, `FoodItem` is what the log stores.
-- **`src/components/ui/`** is shadcn output (style `base-nova`, neutral base, lucide icons). Add new primitives via `npx shadcn@latest add <component>`; see `components.json`. Utility `cn()` lives at `src/lib/utils.ts`.
+- **`src/components/ui/`** is shadcn output (style `base-nova`, neutral base, lucide icons). Add new primitives via `bunx shadcn@latest add <component>`; see `components.json`. Utility `cn()` lives at `src/lib/utils.ts`.
 
 State is intentionally in-memory only — there is no persistence layer. Data resets on refresh; seed data comes from `src/components/health-track/constants.ts`.
 

@@ -25,6 +25,8 @@
 .DS_Store
 *.pem
 
+package-lock.json
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -44,4 +46,8 @@ next-env.d.ts
 # Claude Code tooling
 .claude/
 .agents/
+
+# firebase
 firebase-service-account*.json
+firebase-debug.log
+firestore-debug.log

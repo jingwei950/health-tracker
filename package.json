@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -n 'emulators,next' -c 'yellow,cyan' 'firebase emulators:start' 'bun --bun next dev'",
+    "emulators": "firebase emulators:start",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -33,6 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "jsdom": "^29.0.2",
