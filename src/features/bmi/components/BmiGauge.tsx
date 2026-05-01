@@ -1,20 +1,20 @@
 "use client";
 
 import { PieChart, Pie } from "recharts";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, type ChartConfig } from "@/components/ui/Chart";
 
 const BANDS = [
-  { name: "underweight", value: 8.5, fill: "#60a5fa" }, // 10–18.5
-  { name: "healthy", value: 6.5, fill: "#34d399" }, // 18.5–25
-  { name: "overweight", value: 5, fill: "#fbbf24" }, // 25–30
-  { name: "obese", value: 10, fill: "#f87171" }, // 30–40
+  { name: "underweight", value: 8.5, fill: "var(--status-info)" }, // 10–18.5
+  { name: "healthy", value: 6.5, fill: "var(--status-success)" }, // 18.5–25
+  { name: "overweight", value: 5, fill: "var(--status-warning)" }, // 25–30
+  { name: "obese", value: 10, fill: "var(--status-danger)" }, // 30–40
 ] as const;
 
 const chartConfig = {
-  underweight: { label: "Underweight", color: "#60a5fa" },
-  healthy: { label: "Healthy", color: "#34d399" },
-  overweight: { label: "Overweight", color: "#fbbf24" },
-  obese: { label: "Obese", color: "#f87171" },
+  underweight: { label: "Underweight", color: "var(--status-info)" },
+  healthy: { label: "Healthy", color: "var(--status-success)" },
+  overweight: { label: "Overweight", color: "var(--status-warning)" },
+  obese: { label: "Obese", color: "var(--status-danger)" },
 } satisfies ChartConfig;
 
 export function BmiGauge({ bmi: b }: { bmi: number }) {

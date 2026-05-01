@@ -1,10 +1,26 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { bmi, bmiInfo, idealWeightRangeKg } from "@/lib/health-track/nutrition";
+import type { BmiBand } from "@/lib/health-track/types";
 
 import { BmiGauge } from "./BmiGauge";
 
-const inpCls = "w-full rounded-md border border-input bg-muted px-2.5 py-[7px] text-[13px] text-foreground outline-none transition-colors focus:border-primary";
+const inpCls = "w-full rounded-md border border-border bg-muted px-2.5 py-[7px] text-[13px] text-foreground outline-none transition-colors focus:border-primary";
+
+function bandStyle(band: BmiBand): CSSProperties {
+  const map: Record<BmiBand, string> = {
+    bgg: "var(--status-success)",
+    ba: "var(--status-warning)",
+    bb: "var(--status-info)",
+    br: "var(--status-danger)",
+  };
+  const c = map[band];
+  return {
+    background: `color-mix(in oklch, ${c} 12%, transparent)`,
+    color: c,
+  };
+}
 
 export function BmiPanel({
   weightKg,
@@ -32,12 +48,12 @@ export function BmiPanel({
     weightKg < imn ? "bb" : weightKg > imx ? "ba" : "bgg";
 
   return (
-    <div className="p-3">
+    <div className="p-3 md:p-5">
       <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3">
         <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Height &amp; weight
         </div>
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
           <div>
             <label className="mb-0.5 block text-xs text-muted-foreground">
               Height (cm)
@@ -77,15 +93,7 @@ export function BmiPanel({
         <div className="my-1.5">
           <span
             className="rounded-full px-2.5 py-1 text-[13px] font-medium"
-            style={
-              bi.band === "bgg"
-                ? { background: "rgba(52,211,153,.12)", color: "#34d399" }
-                : bi.band === "ba"
-                  ? { background: "rgba(251,191,36,.12)", color: "#fbbf24" }
-                  : bi.band === "bb"
-                    ? { background: "rgba(96,165,250,.12)", color: "#60a5fa" }
-                    : { background: "rgba(248,113,113,.12)", color: "#f87171" }
-            }
+            style={bandStyle(bi.band)}
           >
             {bi.label}
           </span>
@@ -94,9 +102,9 @@ export function BmiPanel({
         <div
           className="mt-2.5 rounded-md border px-3 py-2 text-left text-xs"
           style={{
-            background: "rgba(96,165,250,.12)",
-            borderColor: "#60a5fa",
-            color: "#60a5fa",
+            background: "color-mix(in oklch, var(--status-info) 12%, transparent)",
+            borderColor: "var(--status-info)",
+            color: "var(--status-info)",
           }}
         >
           {bi.tooltip}
@@ -106,7 +114,7 @@ export function BmiPanel({
         <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Ideal weight range for {heightCm} cm
         </div>
-        <div className="mb-1 text-xl font-medium" style={{ color: "#34d399" }}>
+        <div className="mb-1 text-xl font-medium" style={{ color: "var(--status-success)" }}>
           {range.min} – {range.max} kg
         </div>
         <div className="text-xs text-muted-foreground">
@@ -116,13 +124,7 @@ export function BmiPanel({
           Current: <strong>{weightKg} kg</strong>{" "}
           <span
             className="ml-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
-            style={
-              wcls === "bgg"
-                ? { background: "rgba(52,211,153,.12)", color: "#34d399" }
-                : wcls === "ba"
-                  ? { background: "rgba(251,191,36,.12)", color: "#fbbf24" }
-                  : { background: "rgba(96,165,250,.12)", color: "#60a5fa" }
-            }
+            style={bandStyle(wcls as BmiBand)}
           >
             {wdiff}
           </span>

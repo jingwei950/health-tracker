@@ -28,7 +28,9 @@ import { GoalsDialog } from "./GoalsDialog";
 import { BmiPanel } from "@/features/bmi/components/BmiPanel";
 import { searchResultToFoodItem } from "@/lib/health-track/map-food";
 import { SleepPanel } from "@/features/sleep/components/SleepPanel";
-import { TabNav } from "./TabNav";
+import { BottomNav } from "./BottomNav";
+import { Sidebar } from "./Sidebar";
+import { TopBar } from "./TopBar";
 
 function formatFoodSearchError(message: string): string {
   if (message.includes("missing ANTHROPIC_API_KEY")) {
@@ -42,6 +44,7 @@ export function HealthTrackApp() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [goalsDialogKey, setGoalsDialogKey] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [goals, setGoals] = useState<Goals>(defaultGoals);
   const [food, setFood] = useState<FoodItem[]>(defaultFood);
   const [act, setAct] = useState<ActivityItem[]>(defaultAct);
@@ -204,6 +207,15 @@ export function HealthTrackApp() {
     }
   }, [sj]);
 
+  const handleOpenGoals = useCallback(() => {
+    setGoalsDialogKey((k) => k + 1);
+    setGoalsOpen(true);
+  }, []);
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme((th) => (th === "dark" ? "light" : "dark"));
+  }, []);
+
   return (
     <div
       className={cn(
@@ -215,18 +227,23 @@ export function HealthTrackApp() {
         HealthTrack SG — personal health and nutrition tracker with food logging,
         activity, sleep, and BMI calculator
       </h2>
-      <AppHeader
-        onOpenGoals={() => {
-          setGoalsDialogKey((k) => k + 1);
-          setGoalsOpen(true);
-        }}
-        theme={theme}
-        onToggleTheme={() =>
-          setTheme((th) => (th === "dark" ? "light" : "dark"))
-        }
-      />
-      <TabNav tab={tab} onTab={setTab} />
-      <main>
+      <div className="flex h-svh flex-col overflow-hidden md:flex-row">
+        <Sidebar
+          tab={tab}
+          onTab={setTab}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+        />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <AppHeader
+            onOpenGoals={handleOpenGoals}
+            theme={theme}
+            onToggleTheme={handleToggleTheme}
+          />
+          <TopBar tab={tab} onOpenGoals={handleOpenGoals} />
+          <main className="flex-1 overflow-y-auto">
         {tab === "db" ? (
           <DashboardPanel
             goals={goals}
@@ -298,7 +315,10 @@ export function HealthTrackApp() {
             onHeight={setHeightCm}
           />
         ) : null}
-      </main>
+          </main>
+          <BottomNav tab={tab} onTab={setTab} />
+        </div>
+      </div>
       <GoalsDialog
         key={goalsDialogKey}
         open={goalsOpen}

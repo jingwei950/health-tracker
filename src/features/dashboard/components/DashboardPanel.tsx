@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { bmi, bmiInfo, pct, sleepScore, totals } from "@/lib/health-track/nutrition";
 import type {
   ActivityItem,
+  BmiBand,
   FoodItem,
   Goals,
   SleepEntry,
@@ -18,11 +19,16 @@ const cardCls = "mb-2.5 rounded-[10px] border border-border bg-card p-3";
 const ctCls = "mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground";
 
 function SleepBadge({ score }: { score: number }) {
+  const getStyle = (statusVar: string) => ({
+    background: `color-mix(in oklch, ${statusVar} 12%, transparent)`,
+    color: statusVar,
+  });
+
   if (score >= 80)
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-        style={{ background: "rgba(52,211,153,.12)", color: "#34d399" }}
+        style={getStyle("var(--status-success)")}
       >
         Good
       </span>
@@ -31,7 +37,7 @@ function SleepBadge({ score }: { score: number }) {
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-        style={{ background: "rgba(251,191,36,.12)", color: "#fbbf24" }}
+        style={getStyle("var(--status-warning)")}
       >
         Fair
       </span>
@@ -39,11 +45,25 @@ function SleepBadge({ score }: { score: number }) {
   return (
     <span
       className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-      style={{ background: "rgba(248,113,113,.12)", color: "#f87171" }}
+      style={getStyle("var(--status-danger)")}
     >
       Poor
     </span>
   );
+}
+
+function bandStyle(band: BmiBand) {
+  const map: Record<BmiBand, string> = {
+    bgg: "var(--status-success)",
+    ba: "var(--status-warning)",
+    bb: "var(--status-info)",
+    br: "var(--status-danger)",
+  };
+  const c = map[band];
+  return {
+    background: `color-mix(in oklch, ${c} 12%, transparent)`,
+    color: c,
+  };
 }
 
 export function DashboardPanel({
@@ -76,13 +96,14 @@ export function DashboardPanel({
 
   let alert: ReactNode = null;
   if (food.length && Math.abs(diff) > 500) {
+    const statusVar = diff > 0 ? "var(--status-warning)" : "var(--status-info)";
     alert = (
       <div
         className="mb-2 rounded-md px-3 py-2 text-xs"
         style={{
-          background: diff > 0 ? "rgba(251,191,36,.12)" : "rgba(96,165,250,.12)",
-          border: `1px solid ${diff > 0 ? "#fbbf24" : "#60a5fa"}`,
-          color: diff > 0 ? "#fbbf24" : "#60a5fa",
+          background: `color-mix(in oklch, ${statusVar} 12%, transparent)`,
+          border: `1px solid ${statusVar}`,
+          color: statusVar,
         }}
       >
         {diff > 0
@@ -94,9 +115,9 @@ export function DashboardPanel({
   }
 
   return (
-    <div className="p-3">
+    <div className="p-3 md:p-5">
       {alert}
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
         <div className={cardCls}>
           <div className={ctCls}>Calories today</div>
           <div className="text-[30px] font-medium leading-none text-primary">
@@ -104,11 +125,11 @@ export function DashboardPanel({
           </div>
           <div className="mt-1 text-[11px] text-muted-foreground">
             consumed ·{" "}
-            <span style={{ color: "#f87171" }}>{t.burn}</span> burned
+            <span style={{ color: "var(--status-danger)" }}>{t.burn}</span> burned
           </div>
           <div
             className="mt-1 text-[13px] font-medium"
-            style={{ color: net > goals.calories ? "#fbbf24" : "#34d399" }}
+            style={{ color: net > goals.calories ? "var(--status-warning)" : "var(--status-success)" }}
           >
             {net} net
           </div>
@@ -130,7 +151,7 @@ export function DashboardPanel({
           <MacroDonut t={t} />
         </div>
       </div>
-      <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-3">
         <div className={cardCls}>
           <div className={ctCls}>Sleep</div>
           {last && sc != null ? (
@@ -155,15 +176,7 @@ export function DashboardPanel({
           <div className="mt-1">
             <span
               className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-              style={
-                bi.band === "bgg"
-                  ? { background: "rgba(52,211,153,.12)", color: "#34d399" }
-                  : bi.band === "ba"
-                    ? { background: "rgba(251,191,36,.12)", color: "#fbbf24" }
-                    : bi.band === "bb"
-                      ? { background: "rgba(96,165,250,.12)", color: "#60a5fa" }
-                      : { background: "rgba(248,113,113,.12)", color: "#f87171" }
-              }
+              style={bandStyle(bi.band)}
             >
               {bi.label}
             </span>
@@ -174,7 +187,7 @@ export function DashboardPanel({
         </div>
         <div className={cardCls}>
           <div className={ctCls}>Activity</div>
-          <div className="text-2xl font-medium" style={{ color: "#f87171" }}>
+          <div className="text-2xl font-medium" style={{ color: "var(--status-danger)" }}>
             {t.burn}
           </div>
           <div className="text-[11px] text-muted-foreground">kcal burned</div>
@@ -197,7 +210,7 @@ export function DashboardPanel({
               <button
                 key={f.id}
                 type="button"
-                className="cursor-pointer rounded-[14px] border border-input bg-muted px-[9px] py-[3px] text-xs text-card-foreground transition-colors hover:border-primary hover:text-primary"
+                className="cursor-pointer rounded-[14px] border border-border bg-muted px-[9px] py-[3px] text-xs text-card-foreground transition-colors hover:border-primary hover:text-primary"
                 onClick={() => {
                   onQuickAdd(f.id);
                   onGoEat("fd");

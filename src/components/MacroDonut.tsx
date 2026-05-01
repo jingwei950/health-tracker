@@ -17,9 +17,9 @@ export function MacroDonut({ t }: { t: MacroTotals }) {
     );
   }
   const segs = [
-    { k: t.protein * 4, c: "#34d399", l: `P ${t.protein}g` },
-    { k: t.carbs * 4, c: "#60a5fa", l: `C ${t.carbs}g` },
-    { k: t.fat * 9, c: "#fbbf24", l: `F ${t.fat}g` },
+    { k: t.protein * 4, c: "var(--chart-1)", l: `P ${t.protein}g` },
+    { k: t.carbs * 4, c: "var(--chart-3)", l: `C ${t.carbs}g` },
+    { k: t.fat * 9, c: "var(--chart-5)", l: `F ${t.fat}g` },
   ];
   let a = -90;
   const arcs = segs
