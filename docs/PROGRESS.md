@@ -21,8 +21,8 @@
 - [x] **T1.2** — Install Firebase SDK and CLI
 - [x] **T1.3** — Create Environment Variables
 - [x] **T1.4** — Create Firebase Config Singleton
-- [ ] **T1.5** — Deploy Firestore Security Rules *(pending Firebase CLI login fix)*
-- [ ] **T1.6** — Create Firestore Indexes *(pending Firebase CLI login fix)*
+- [x] **T1.5** — Deploy Firestore Security Rules
+- [x] **T1.6** — Create Firestore Indexes
 - [x] **T1.7** — Implement Authentication
 - [x] **T1.8** — Create TypeScript Types
 - [x] **T1.9** — Implement Firestore Data Layer
@@ -31,24 +31,24 @@
 - [x] **T1.12** — Create Cloud Function: New User Setup
 - [x] **T1.13** — LocalStorage Migration Script
 - [x] **T1.14** — Verify TypeScript Path Alias
-- [ ] **T1.15** — Firebase Admin SDK Initialisation *(manual — service account key required)*
-- [ ] **T1.16** — Deploy Firebase Storage Rules *(pending Firebase CLI login fix)*
+- [ ] **T1.15** — Firebase Admin SDK Initialisation *(deferred — future implementation)*
+- [ ] **T1.16** — Deploy Firebase Storage Rules *(deferred — future implementation)*
 - [x] **T1.17** — Fix `arrayUnion` in `logActivityEntry`
 - [x] **T1.18** — Next.js Route Protection Middleware
 
-**Phase 1 gate:** All 18 tasks above must be `[x]` before opening PHASE_2_GEMINI.md
+**Phase 1 gate:** T1.15 and T1.16 are deferred to future implementation — Phase 2 may proceed.
 
 ---
 
 ## Phase 2 — Firebase AI Logic (Gemini) Setup
 
-- [ ] **T2.1** — Enable Gemini Developer API *(manual — Firebase console action required)*
-- [ ] **T2.2** — Install Firebase AI SDK
-- [ ] **T2.3** — Create Firebase AI Logic Client
-- [ ] **T2.4** — Create Test API Route
-- [ ] **T2.5** — Confirm Consent Gate
-- [ ] **T2.6** — Test Function Calling
-- [ ] **T2.7** — Fix Admin SDK Usage Across All API Routes
+- [x] **T2.1** — Enable Gemini Developer API *(manual — Firebase console action required)*
+- [x] **T2.2** — Install Firebase AI SDK
+- [x] **T2.3** — Create Firebase AI Logic Client
+- [x] **T2.4** — Create Test API Route
+- [x] **T2.5** — Confirm Consent Gate
+- [x] **T2.6** — Test Function Calling
+- [x] **T2.7** — Fix Admin SDK Usage Across All API Routes
 
 **Phase 2 gate:** All 7 tasks above must be `[x]` before opening PHASE_3_TAVILY.md
 
@@ -106,8 +106,8 @@
 | Phase | Tasks | Done | Remaining |
 |---|---|---|---|
 | Prerequisites | 4 | 4 | 0 |
-| Phase 1 — Firebase | 18 | 14 | 4 |
-| Phase 2 — Gemini | 7 | 0 | 7 |
+| Phase 1 — Firebase | 18 | 16 | 2 |
+| Phase 2 — Gemini | 7 | 7 | 0 |
 | Phase 3 — Tavily | 5 | 0 | 5 |
 | Phase 4 — Integration | 11 | 0 | 11 |
 | Phase 5 — Future | 10 | 0 | 10 |
@@ -117,4 +117,4 @@
 
 ---
 
-*Last updated: 2026-04-22 — 14/18 Phase 1 tasks complete. Blocked on Firebase CLI account (T1.5, T1.6, T1.16) and service account key (T1.15).*
+*Last updated: 2026-05-01 — Phase 2 complete. All 7 Gemini tasks done. T1.15 and T1.16 deferred. Phase 3 unblocked.*

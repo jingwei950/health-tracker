@@ -31,13 +31,6 @@
         { "fieldPath": "date",        "order": "DESCENDING" },
         { "fieldPath": "lastUpdated", "order": "DESCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "insights",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "generatedAt", "order": "DESCENDING" }
-      ]
     }
   ],
   "fieldOverrides": []
