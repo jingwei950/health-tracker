@@ -2,7 +2,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_ROUTES       = ['/', '/login', '/signup', '/forgot-password'];
-const PUBLIC_API_PREFIXES = ['/api/auth', '/api/health', '/api/ai/test-tools'];
+const PUBLIC_API_PREFIXES = [
+  '/api/auth',
+  '/api/health',
+  '/api/ai/test-tools',
+  '/api/nutrition',   // TODO: require Bearer auth once user session is wired to nutrition search
+  '/api/food-search', // TODO: require Bearer auth once user session is wired to food search
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
