@@ -225,14 +225,7 @@ export function useNutritionSearch() {
         return;
       }
 
-      // Step 2: Single HPB match — skip Gemini entirely
-      if (searchData.singleHPBMatch) {
-        setResult({ ...searchData.candidates[0], dataVerified: true, verificationNote: 'Matched HPB Singapore database' });
-        setState('ready');
-        return;
-      }
-
-      // Step 3: Gemini verification
+      // Step 2: Gemini verification
       setState('verifying');
       const verifyRes  = await fetch('/api/nutrition/verify', {
         method:  'POST',
@@ -673,7 +666,6 @@ for f in \
   src/lib/ai/gemini.ts \
   src/lib/ai/consent.ts \
   src/lib/search/tavily.ts \
-  src/lib/search/sg-foods.ts \
   src/types/health.types.ts \
   src/hooks/useAuth.ts \
   src/hooks/useNutritionSearch.ts \
@@ -681,7 +673,6 @@ for f in \
   src/hooks/useDailySummary.ts \
   src/contexts/AuthContext.tsx \
   src/middleware.ts \
-  src/data/sg-foods.json \
   src/components/nutrition/FoodReviewCard.tsx \
   src/app/api/ai/test/route.ts \
   src/app/api/ai/test-tools/route.ts \
@@ -713,8 +704,8 @@ grep -r "tavily.com" src --include="*.tsx" --include="*.ts" | grep -v "src/lib/s
 
 ### Check 4 — API endpoints respond correctly
 ```bash
-# 4a. HPB match (instant, local)
-curl -s "http://localhost:3000/api/nutrition/search?q=Chicken+Rice" | grep '"tier":"local_hpb"'
+# 4a. Known food hits Firestore cache (after at least one prior search)
+curl -s "http://localhost:3000/api/nutrition/search?q=Chicken+Rice" | grep '"tier":"cache"'
 # Must match
 
 # 4b. Unknown food goes to Tavily

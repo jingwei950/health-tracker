@@ -1,6 +1,7 @@
 "use client";
 
-import type { ActivityIntensity, ActivityItem } from "@/lib/health-track/types";
+import type { ActivityIntensity } from "@/lib/health-track/types";
+import type { ActivityLog } from "@/types/health.types";
 
 const mets: Record<ActivityIntensity, number> = {
   low: 3.5,
@@ -30,7 +31,7 @@ export function ActivityPanel({
   onRemove,
 }: {
   weightKg: number;
-  act: ActivityItem[];
+  act: ActivityLog[];
   atab: "manual" | "watch";
   onAtab: (t: "manual" | "watch") => void;
   an: string;
@@ -44,7 +45,7 @@ export function ActivityPanel({
   we: string | null;
   onAddManual: () => void;
   onImportWatch: () => void;
-  onRemove: (id: number) => void;
+  onRemove: (entry: ActivityLog) => void;
 }) {
   const met = mets[ai] ?? 6;
   const dur = Number.parseFloat(ad) || 0;
@@ -180,15 +181,15 @@ export function ActivityPanel({
           <div key={a.id} className="mb-2 rounded-[10px] border border-border bg-card px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="text-[13px] font-medium">{a.name}</div>
+                <div className="text-[13px] font-medium">{a.activityName}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
-                  {a.duration ? `${a.duration} min` : ""}
-                  {a.intensity
-                    ? `${a.duration ? " · " : ""}${a.intensity.charAt(0).toUpperCase()}${a.intensity.slice(1)}`
+                  {a.durationMinutes ? `${a.durationMinutes} min` : ""}
+                  {a.intensityLevel
+                    ? `${a.durationMinutes ? " · " : ""}${a.intensityLevel.charAt(0).toUpperCase()}${a.intensityLevel.slice(1)}`
                     : ""}
-                  {a.type === "watch" ? " · Watch import" : ""}
+                  {a.source === "apple_watch" ? " · Watch import" : ""}
                 </div>
-                {a.type === "manual" ? (
+                {a.estimated ? (
                   <div className="mt-1">
                     <span
                       className="rounded-full border px-2 py-0.5 text-[11px]"
@@ -204,14 +205,14 @@ export function ActivityPanel({
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <span className="text-[15px] font-medium" style={{ color: "var(--status-danger)" }}>
-                  {a.calories}{" "}
+                  {a.caloriesBurned}{" "}
                   <span className="text-[10px] text-muted-foreground">kcal</span>
                 </span>
                 <button
                   type="button"
                   className="cursor-pointer rounded-md border-none bg-transparent px-[7px] py-[3px] text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  aria-label={`Remove ${a.name}`}
-                  onClick={() => onRemove(a.id)}
+                  aria-label={`Remove ${a.activityName}`}
+                  onClick={() => onRemove(a)}
                 >
                   ×
                 </button>

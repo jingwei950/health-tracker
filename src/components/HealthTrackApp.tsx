@@ -2,12 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { totals } from "@/lib/health-track/nutrition";
+import type { MacroTotals } from "@/lib/health-track/nutrition";
 import type {
   ActivityIntensity,
-  ActivityItem,
-  FoodItem,
-  FoodSearchResult,
   Goals,
   SleepEntry,
   TabId,
@@ -16,28 +13,24 @@ import { cn } from "@/lib/utils";
 
 import { AppHeader } from "./AppHeader";
 import { ActivityPanel } from "@/features/activity/components/ActivityPanel";
-import {
-  defaultAct,
-  defaultFood,
-  defaultGoals,
-  defaultSleep,
-} from "@/lib/health-track/constants";
+import { defaultGoals, defaultSleep } from "@/lib/health-track/constants";
 import { DashboardPanel } from "@/features/dashboard/components/DashboardPanel";
 import { FoodPanel } from "@/features/food/components/FoodPanel";
 import { GoalsDialog } from "./GoalsDialog";
 import { BmiPanel } from "@/features/bmi/components/BmiPanel";
-import { searchResultToFoodItem } from "@/lib/health-track/map-food";
 import { SleepPanel } from "@/features/sleep/components/SleepPanel";
 import { BottomNav } from "./BottomNav";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
-function formatFoodSearchError(message: string): string {
-  if (message.includes("missing ANTHROPIC_API_KEY")) {
-    return "Add your Anthropic API key: set ANTHROPIC_API_KEY in .env.local at the project root, then restart the dev server. On Vercel, add ANTHROPIC_API_KEY under Project → Settings → Environment Variables and redeploy.";
-  }
-  return message;
-}
+import { useAuthContext }   from "@/contexts/AuthContext";
+import { useNutritionLogs, useActivityLogs } from "@/hooks/useTodayLogs";
+import {
+  logFoodEntry, deleteFoodEntry,
+  logActivityEntry, deleteActivityEntry,
+} from "@/lib/firebase/firestore";
+import type { NutritionLog, ActivityLog } from "@/types/health.types";
+import type { VerifiedNutrition } from "@/hooks/useNutritionSearch";
 
 export function HealthTrackApp() {
   const [tab, setTab] = useState<TabId>("db");
@@ -46,16 +39,9 @@ export function HealthTrackApp() {
   const [goalsDialogKey, setGoalsDialogKey] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [goals, setGoals] = useState<Goals>(defaultGoals);
-  const [food, setFood] = useState<FoodItem[]>(defaultFood);
-  const [act, setAct] = useState<ActivityItem[]>(defaultAct);
   const [sleep, setSleep] = useState<SleepEntry[]>(defaultSleep);
   const [weightKg, setWeightKg] = useState(70);
   const [heightCm, setHeightCm] = useState(174);
-
-  const [foodQuery, setFoodQuery] = useState("");
-  const [foodResult, setFoodResult] = useState<FoodSearchResult | null>(null);
-  const [foodLoading, setFoodLoading] = useState(false);
-  const [foodError, setFoodError] = useState<string | null>(null);
 
   const [atab, setAtab] = useState<"manual" | "watch">("manual");
   const [an, setAn] = useState("");
@@ -67,117 +53,157 @@ export function HealthTrackApp() {
   const [sj, setSj] = useState("");
   const [se, setSe] = useState<string | null>(null);
 
-  const t = useMemo(() => totals(food, act), [food, act]);
+  const { user } = useAuthContext();
+  const uid = user?.uid ?? null;
+  const today = new Date().toISOString().split('T')[0];
 
-  const searchFood = useCallback(async () => {
-    const q = foodQuery.trim();
-    if (!q) return;
-    setFoodLoading(true);
-    setFoodError(null);
-    setFoodResult(null);
-    try {
-      const res = await fetch("/api/food-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q }),
-      });
-      const data = (await res.json()) as { error?: string; result?: FoodSearchResult };
-      if (!res.ok) throw new Error(data.error ?? "Search failed");
-      if (!data.result) throw new Error("Invalid response from server.");
-      setFoodResult(data.result);
-    } catch (e) {
-      const raw =
-        e instanceof Error ? e.message : "Search failed. Try again.";
-      setFoodError(formatFoodSearchError(raw));
-    } finally {
-      setFoodLoading(false);
-    }
-  }, [foodQuery]);
+  const { logs: nutritionLogs } = useNutritionLogs(uid);
+  const { logs: activityLogs }  = useActivityLogs(uid);
 
-  const addFoodFromResult = useCallback(() => {
-    if (!foodResult) return;
-    setFood((prev) => [
-      ...prev,
-      searchResultToFoodItem(foodResult, Date.now()),
-    ]);
-    setFoodResult(null);
-    setFoodQuery("");
-  }, [foodResult]);
+  const t = useMemo<MacroTotals>(() => ({
+    calories: nutritionLogs.reduce((s, l) => s + l.calories, 0),
+    protein:  nutritionLogs.reduce((s, l) => s + l.protein,  0),
+    carbs:    nutritionLogs.reduce((s, l) => s + l.carbs,    0),
+    fat:      nutritionLogs.reduce((s, l) => s + l.fat,      0),
+    burn:     activityLogs.reduce((s, l)  => s + l.caloriesBurned, 0),
+  }), [nutritionLogs, activityLogs]);
 
-  const removeFood = useCallback((id: number) => {
-    setFood((prev) => prev.filter((f) => f.id !== id));
-  }, []);
+  const recentFoods = useMemo(() => [...nutritionLogs].reverse().slice(0, 5), [nutritionLogs]);
+  const sessionCount = activityLogs.length;
 
-  const quickAddFood = useCallback((id: number) => {
-    const f = food.find((x) => x.id === id);
-    if (f) {
-      setFood((prev) => [...prev, { ...f, id: Date.now() }]);
-    }
-  }, [food]);
+  const handleLogFood = useCallback(async (entry: VerifiedNutrition & { mealType: string }) => {
+    if (!uid) throw new Error('Sign in to log food');
+    await logFoodEntry(uid, {
+      foodName:    entry.foodName,
+      mealType:    entry.mealType as NutritionLog['mealType'],
+      servings:    1,
+      servingSize: entry.servingSize,
+      servingUnit: entry.servingUnit,
+      calories:    entry.calories,
+      protein:     entry.protein,
+      carbs:       entry.carbs,
+      fat:         entry.fat,
+      source:      entry.source,
+      dataVerified: entry.dataVerified,
+      estimated:   !entry.dataVerified,
+      logSource:   'search',
+      date:        today,
+    });
+  }, [uid, today]);
 
-  const addManualActivity = useCallback(() => {
+  const handleDeleteFood = useCallback(async (entry: NutritionLog) => {
+    if (!uid) return;
+    await deleteFoodEntry(uid, entry.id, {
+      date:     entry.date,
+      calories: entry.calories,
+      protein:  entry.protein,
+      carbs:    entry.carbs,
+      fat:      entry.fat,
+    });
+  }, [uid]);
+
+  const handleQuickAdd = useCallback(async (logId: string) => {
+    if (!uid) return;
+    const entry = nutritionLogs.find(l => l.id === logId);
+    if (!entry) return;
+    await logFoodEntry(uid, {
+      foodName:    entry.foodName,
+      mealType:    entry.mealType,
+      servings:    entry.servings,
+      servingSize: entry.servingSize,
+      servingUnit: entry.servingUnit,
+      calories:    entry.calories,
+      protein:     entry.protein,
+      carbs:       entry.carbs,
+      fat:         entry.fat,
+      source:      entry.source,
+      dataVerified: entry.dataVerified,
+      estimated:   entry.estimated,
+      logSource:   'quick_add',
+      date:        today,
+    });
+  }, [uid, nutritionLogs, today]);
+
+  const mets: Record<ActivityIntensity, number> = { low: 3.5, medium: 6.0, high: 9.0 };
+
+  const addManualActivity = useCallback(async () => {
     const n = an.trim();
     const d = Number.parseFloat(ad);
     if (!n || !d || d <= 0) return;
-    const mets: Record<ActivityIntensity, number> = {
-      low: 3.5,
-      medium: 6.0,
-      high: 9.0,
-    };
-    const calories = Math.round(((mets[ai] ?? 6) * weightKg * d) / 60);
-    setAct((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: n,
-        duration: d,
-        intensity: ai,
-        calories,
-        type: "manual",
-      },
-    ]);
+    const met      = mets[ai] ?? 6;
+    const calories = Math.round((met * weightKg * d) / 60);
+    if (uid) {
+      await logActivityEntry(uid, {
+        activityName:    n,
+        category:        'other',
+        durationMinutes: d,
+        durationHours:   d / 60,
+        intensityLevel:  ai,
+        met,
+        caloriesBurned:  calories,
+        estimated:       true,
+        date:            today,
+        source:          'manual',
+      });
+    }
     setAn("");
     setAd("");
-  }, [an, ad, ai, weightKg]);
+  }, [an, ad, ai, weightKg, uid, today]);
 
-  const importWatch = useCallback(() => {
+  const importWatch = useCallback(async () => {
     setWe(null);
     try {
       const d = JSON.parse(wj.trim()) as {
-        workouts?: Array<{
-          name: string;
-          duration_min: number;
-          calories: number;
-        }>;
+        workouts?: Array<{ name: string; duration_min: number; calories: number }>;
         active_calories?: number;
       };
-      const additions: ActivityItem[] = [];
+      const entries: Omit<ActivityLog, 'id' | 'loggedAt'>[] = [];
       (d.workouts ?? []).forEach((w) => {
-        additions.push({
-          id: Date.now() + Math.random(),
-          name: w.name,
-          duration: w.duration_min,
-          intensity: null,
-          calories: w.calories,
-          type: "watch",
+        entries.push({
+          activityName:    w.name,
+          category:        'other',
+          durationMinutes: w.duration_min,
+          durationHours:   w.duration_min / 60,
+          intensityLevel:  'medium',
+          met:             6.0,
+          caloriesBurned:  w.calories,
+          estimated:       false,
+          date:            today,
+          source:          'apple_watch',
         });
       });
       if (!d.workouts?.length && d.active_calories) {
-        additions.push({
-          id: Date.now(),
-          name: "Apple Watch Activity",
-          duration: 0,
-          intensity: null,
-          calories: d.active_calories,
-          type: "watch",
+        entries.push({
+          activityName:    'Apple Watch Activity',
+          category:        'other',
+          durationMinutes: 0,
+          durationHours:   0,
+          intensityLevel:  'medium',
+          met:             6.0,
+          caloriesBurned:  d.active_calories,
+          estimated:       false,
+          date:            today,
+          source:          'apple_watch',
         });
       }
-      setAct((prev) => [...prev, ...additions]);
+      if (uid) {
+        await Promise.all(entries.map(e => logActivityEntry(uid, e)));
+      }
       setWj("");
     } catch {
       setWe("Invalid JSON — check the format");
     }
-  }, [wj]);
+  }, [wj, uid, today]);
+
+  const handleDeleteActivity = useCallback(async (entry: ActivityLog) => {
+    if (!uid) return;
+    await deleteActivityEntry(uid, entry.id, {
+      date:            entry.date,
+      caloriesBurned:  entry.caloriesBurned,
+      durationMinutes: entry.durationMinutes,
+      activityName:    entry.activityName,
+    });
+  }, [uid]);
 
   const importSleep = useCallback(() => {
     setSe(null);
@@ -201,9 +227,7 @@ export function HealthTrackApp() {
       setSleep((prev) => [...prev, entry]);
       setSj("");
     } catch (e) {
-      setSe(
-        e instanceof Error ? e.message : "Invalid JSON format",
-      );
+      setSe(e instanceof Error ? e.message : "Invalid JSON format");
     }
   }, [sj]);
 
@@ -247,36 +271,29 @@ export function HealthTrackApp() {
         {tab === "db" ? (
           <DashboardPanel
             goals={goals}
-            food={food}
-            act={act}
+            t={t}
+            recentFoods={recentFoods}
+            sessionCount={sessionCount}
             sleep={sleep}
             weightKg={weightKg}
             heightCm={heightCm}
-            onQuickAdd={quickAddFood}
+            onQuickAdd={handleQuickAdd}
             onGoEat={setTab}
           />
         ) : null}
         {tab === "fd" ? (
           <FoodPanel
             goals={goals}
-            food={food}
+            food={nutritionLogs}
             t={t}
-            foodQuery={foodQuery}
-            onFoodQueryChange={setFoodQuery}
-            foodResult={foodResult}
-            foodLoading={foodLoading}
-            foodError={foodError}
-            onSearch={searchFood}
-            onDiscard={() => setFoodResult(null)}
-            onAdd={addFoodFromResult}
-            onRemove={removeFood}
-            onRetry={searchFood}
+            onLog={handleLogFood}
+            onRemove={handleDeleteFood}
           />
         ) : null}
         {tab === "ac" ? (
           <ActivityPanel
             weightKg={weightKg}
-            act={act}
+            act={activityLogs}
             atab={atab}
             onAtab={setAtab}
             an={an}
@@ -290,9 +307,7 @@ export function HealthTrackApp() {
             we={we}
             onAddManual={addManualActivity}
             onImportWatch={importWatch}
-            onRemove={(id) =>
-              setAct((prev) => prev.filter((a) => a.id !== id))
-            }
+            onRemove={handleDeleteActivity}
           />
         ) : null}
         {tab === "sl" ? (

@@ -4,67 +4,68 @@ import { describe, expect, it, vi } from "vitest";
 
 import { defaultGoals } from "@/lib/health-track/constants";
 import { FoodPanel } from "./FoodPanel";
+import type { NutritionLog } from "@/types/health.types";
 
 const emptyTotals = { calories: 0, protein: 0, carbs: 0, fat: 0, burn: 0 };
 
+const mockSearch = vi.fn();
+const mockReset  = vi.fn();
+
+vi.mock("@/hooks/useNutritionSearch", () => ({
+  useNutritionSearch: vi.fn(() => ({
+    state:  "idle",
+    result: null,
+    error:  null,
+    search: mockSearch,
+    reset:  mockReset,
+  })),
+}));
+
 describe("FoodPanel", () => {
-  it("calls onSearch when Search is clicked", async () => {
-    const onSearch = vi.fn();
+  it("calls search when Search is clicked", async () => {
     const user = userEvent.setup();
     render(
       <FoodPanel
         goals={defaultGoals}
         food={[]}
         t={emptyTotals}
-        foodQuery="chicken rice"
-        onFoodQueryChange={() => {}}
-        foodResult={null}
-        foodLoading={false}
-        foodError={null}
-        onSearch={onSearch}
-        onDiscard={() => {}}
-        onAdd={() => {}}
-        onRemove={() => {}}
-        onRetry={() => {}}
+        onLog={vi.fn()}
+        onRemove={vi.fn()}
       />,
     );
     await user.click(screen.getByRole("button", { name: /^search$/i }));
-    expect(onSearch).toHaveBeenCalledTimes(1);
+    expect(mockSearch).toHaveBeenCalledTimes(1);
   });
 
-  it("shows search result and Add to log when provided", async () => {
-    const onAdd = vi.fn();
+  it("shows food log entries", () => {
+    const entry: NutritionLog = {
+      id:          "abc123",
+      foodName:    "Kaya Toast",
+      mealType:    "breakfast",
+      servingSize: 140,
+      servingUnit: "g",
+      servings:    1,
+      calories:    320,
+      protein:     8,
+      carbs:       42,
+      fat:         14,
+      source:      "HPB Singapore",
+      dataVerified: true,
+      estimated:   false,
+      logSource:   "search",
+      date:        "2026-05-02",
+      loggedAt:    null as any,
+    };
     render(
       <FoodPanel
         goals={defaultGoals}
-        food={[]}
+        food={[entry]}
         t={emptyTotals}
-        foodQuery=""
-        onFoodQueryChange={() => {}}
-        foodResult={{
-          food_name: "Chicken Rice",
-          serving_size: "1 plate",
-          calories: 600,
-          protein_g: 30,
-          carbs_g: 70,
-          fat_g: 15,
-          fibre_g: 2,
-          sugar_g: 3,
-          source_url: "https://example.com",
-          source_name: "HPB",
-        }}
-        foodLoading={false}
-        foodError={null}
-        onSearch={() => {}}
-        onDiscard={() => {}}
-        onAdd={onAdd}
-        onRemove={() => {}}
-        onRetry={() => {}}
+        onLog={vi.fn()}
+        onRemove={vi.fn()}
       />,
     );
-    expect(screen.getByText("Chicken Rice")).toBeInTheDocument();
-    const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /add to log/i }));
-    expect(onAdd).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Kaya Toast")).toBeInTheDocument();
+    expect(screen.getByText("320")).toBeInTheDocument();
   });
 });

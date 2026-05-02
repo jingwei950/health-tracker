@@ -2,15 +2,10 @@
 
 import type { ReactNode } from "react";
 
-import { bmi, bmiInfo, pct, sleepScore, totals } from "@/lib/health-track/nutrition";
-import type {
-  ActivityItem,
-  BmiBand,
-  FoodItem,
-  Goals,
-  SleepEntry,
-  TabId,
-} from "@/lib/health-track/types";
+import { bmi, bmiInfo, pct, sleepScore } from "@/lib/health-track/nutrition";
+import type { MacroTotals } from "@/lib/health-track/nutrition";
+import type { BmiBand, Goals, SleepEntry, TabId } from "@/lib/health-track/types";
+import type { NutritionLog, ActivityLog } from "@/types/health.types";
 
 import { MacroDonut } from "@/components/MacroDonut";
 import { MacroProgressList } from "@/components/MacroProgressList";
@@ -68,34 +63,34 @@ function bandStyle(band: BmiBand) {
 
 export function DashboardPanel({
   goals,
-  food,
-  act,
+  t,
+  recentFoods,
+  sessionCount,
   sleep,
   weightKg,
   heightCm,
   onQuickAdd,
   onGoEat,
 }: {
-  goals: Goals;
-  food: FoodItem[];
-  act: ActivityItem[];
-  sleep: SleepEntry[];
-  weightKg: number;
-  heightCm: number;
-  onQuickAdd: (id: number) => void;
-  onGoEat: (t: TabId) => void;
+  goals:        Goals;
+  t:            MacroTotals;
+  recentFoods:  NutritionLog[];
+  sessionCount: number;
+  sleep:        SleepEntry[];
+  weightKg:     number;
+  heightCm:     number;
+  onQuickAdd:   (id: string) => void;
+  onGoEat:      (t: TabId) => void;
 }) {
-  const t = totals(food, act);
-  const net = t.calories - t.burn;
+  const net  = t.calories - t.burn;
   const diff = net - goals.calories;
   const last = sleep[sleep.length - 1];
-  const sc = last ? sleepScore(last) : null;
-  const bv = bmi(weightKg, heightCm);
-  const bi = bmiInfo(bv);
-  const recent = [...food].reverse().slice(0, 5);
+  const sc   = last ? sleepScore(last) : null;
+  const bv   = bmi(weightKg, heightCm);
+  const bi   = bmiInfo(bv);
 
   let alert: ReactNode = null;
-  if (food.length && Math.abs(diff) > 500) {
+  if (t.calories > 0 && Math.abs(diff) > 500) {
     const statusVar = diff > 0 ? "var(--status-warning)" : "var(--status-info)";
     alert = (
       <div
@@ -192,7 +187,7 @@ export function DashboardPanel({
           </div>
           <div className="text-[11px] text-muted-foreground">kcal burned</div>
           <div className="text-[11px] text-muted-foreground">
-            {act.length} session{act.length !== 1 ? "s" : ""}
+            {sessionCount} session{sessionCount !== 1 ? "s" : ""}
           </div>
         </div>
       </div>
@@ -202,11 +197,11 @@ export function DashboardPanel({
           <MacroProgressList t={t} goals={goals} />
         </div>
       ) : null}
-      {recent.length > 0 ? (
+      {recentFoods.length > 0 ? (
         <div className={cardCls}>
           <div className={ctCls}>Quick-add recent foods</div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {recent.map((f) => (
+            {recentFoods.map((f) => (
               <button
                 key={f.id}
                 type="button"
@@ -216,7 +211,7 @@ export function DashboardPanel({
                   onGoEat("fd");
                 }}
               >
-                {f.name}
+                {f.foodName}
               </button>
             ))}
           </div>

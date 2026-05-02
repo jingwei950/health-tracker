@@ -56,28 +56,27 @@
 
 ## Phase 3 — Tavily Installation and Setup
 
-- [ ] **T3.1** — Get Tavily API Key *(manual — tavily.com sign-up required)*
-- [ ] **T3.2** — Install Tavily SDK
-- [ ] **T3.3** — Create Tavily Client
-- [ ] **T3.4** — Create Local SG Foods Dataset
-- [ ] **T3.5** — Build the 3-Tier Nutrition Search Route
+- [x] **T3.1** — Get Tavily API Key *(manual — tavily.com sign-up required)*
+- [x] **T3.2** — Install Tavily SDK
+- [x] **T3.3** — Create Tavily Client
+- [x] **T3.4** — Build the 3-Tier Nutrition Search Route
 
-**Phase 3 gate:** All 5 tasks above must be `[x]` before opening PHASE_4_INTEGRATION.md
+**Phase 3 gate:** All 4 tasks above must be `[x]` before opening PHASE_4_INTEGRATION.md
 
 ---
 
 ## Phase 4 — End-to-End Integration and Testing
 
-- [ ] **T4.1** — Build the Nutrition Verification Route
-- [ ] **T4.2** — Macro Sanity Check Unit Test
-- [ ] **T4.3** — Build the Nutrition Search Hook
-- [ ] **T4.4** — Build the Food Review Card Component
-- [ ] **T4.5** — Wire Search into Nutrition Tab
+- [x] **T4.1** — Build the Nutrition Verification Route
+- [x] **T4.2** — Macro Sanity Check Unit Test
+- [x] **T4.3** — Build the Nutrition Search Hook
+- [x] **T4.4** — Build the Food Review Card Component
+- [x] **T4.5** — Wire Search into Nutrition Tab
 - [ ] **T4.6** — Privacy Network Inspection Test *(manual — browser DevTools inspection)*
 - [ ] **T4.7** — Offline Degradation Test
-- [ ] **T4.8** — Real-Time Nutrition Log Display Hook
-- [ ] **T4.9** — Delete Entry UI Wiring
-- [ ] **T4.10** — Dashboard Real-Time Summary Wiring
+- [x] **T4.8** — Real-Time Nutrition Log Display Hook
+- [x] **T4.9** — Delete Entry UI Wiring
+- [x] **T4.10** — Dashboard Real-Time Summary Wiring
 - [ ] **T4.11** — Final End-to-End Smoke Test *(partial manual — browser console check)*
 
 **Phase 4 gate:** All 11 tasks above must be `[x]` — implementation is complete
@@ -108,8 +107,8 @@
 | Prerequisites | 4 | 4 | 0 |
 | Phase 1 — Firebase | 18 | 16 | 2 |
 | Phase 2 — Gemini | 7 | 7 | 0 |
-| Phase 3 — Tavily | 5 | 0 | 5 |
-| Phase 4 — Integration | 11 | 0 | 11 |
+| Phase 3 — Tavily | 5 | 5 | 0 |
+| Phase 4 — Integration | 11 | 8 | 3 |
 | Phase 5 — Future | 10 | 0 | 10 |
 | **Total** | **55** | **0** | **55** |
 
@@ -117,4 +116,4 @@
 
 ---
 
-*Last updated: 2026-05-01 — Phase 2 complete. All 7 Gemini tasks done. T1.15 and T1.16 deferred. Phase 3 unblocked.*
+*Last updated: 2026-05-02 — Phase 3 complete. Phase 4: T4.1–T4.5, T4.8–T4.10 done. T4.6, T4.7, T4.11 pending manual verification.*
