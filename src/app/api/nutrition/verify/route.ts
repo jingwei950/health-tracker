@@ -58,38 +58,17 @@ function applyMacroSanity(r: VerifiedResult): VerifiedResult {
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, candidates }: { query: string; candidates: NutritionCandidate[] } =
+    const { query, candidates, uid }: { query: string; candidates: NutritionCandidate[]; uid?: string } =
       await request.json();
 
     if (!candidates?.length)
       return NextResponse.json({ error: 'No candidates provided' }, { status: 400 });
 
-    // ── Fast path: HPB FoodID data is pre-extracted from official SG source ──
-    const hpb = candidates.find(c => c.source === 'HPB FoodID' && !c.rawContent && c.calories > 0);
-    if (hpb) {
-      const result: VerifiedResult = {
-        foodName:         hpb.foodName,
-        calories:         hpb.calories,
-        protein:          hpb.protein,
-        carbs:            hpb.carbs,
-        fat:              hpb.fat,
-        servingSize:      hpb.servingSize,
-        servingUnit:      hpb.servingUnit,
-        source:           'HPB FoodID',
-        sourceUrl:        hpb.url ?? '',
-        dataVerified:     true,
-        verificationNote: 'Verified — HPB Singapore Food Insights Database',
-      };
-      const verified = applyMacroSanity(result);
-      setAdminNutritionCache(query, verified).catch(() => {});
-      return NextResponse.json({ ok: true, result: verified });
-    }
-
-    // ── Gemini path: extract from web snippets or Open Food Facts numbers ──
+    // ── Gemini path: evaluate all candidates and pick the best match ──
     const model = getGeminiModel();
 
     const candidateSummary = candidates.map((c, i) =>
-      `Candidate ${i + 1}:\n  Source: ${c.source}\n` +
+      `Candidate ${i + 1} — ${c.foodName}:\n  Source: ${c.source}\n` +
       (c.rawContent
         ? `  Web snippet: ${c.rawContent.slice(0, 600)}`
         : `  Nutrition: ${c.calories} kcal · P ${c.protein}g · C ${c.carbs}g · F ${c.fat}g · ${c.servingSize}${c.servingUnit}`)
@@ -102,12 +81,12 @@ Available data:
 ${candidateSummary}
 
 Tasks:
-1. Identify the best match for "${query}"
-2. Extract nutrition values from the web snippet if present; otherwise use your knowledge of Singapore food nutrition to estimate
+1. Identify the best match for "${query}" — the candidate food name must closely match the searched item; ignore candidates that are clearly unrelated
+2. Extract nutrition values from the web snippet if present; otherwise use your knowledge of food nutrition to estimate
 3. Always return numeric values for calories, protein, carbs, fat, servingSize — never null or 0 unless the food genuinely has none
-4. Set dataVerified to true ONLY if data is from a credible source (HPB, HealthHub, official nutrition database) and internally consistent
+4. Set dataVerified to true ONLY if data is from a credible source (HPB, HealthHub, official nutrition database, or official brand/restaurant website) and internally consistent
 5. Set dataVerified to false and note "Estimated from food knowledge" if using estimates rather than extracted data
-6. Set sourceUrl to the URL from the "[Source URL: ...]" line in the web snippet, or "" if absent
+6. Set sourceUrl to the URL from the "[Source URL: ...]" line in the web snippet, or the HPB candidate's URL if using HPB data, or "" if absent
 
 Reply with ONLY valid JSON — no markdown fences, no preamble:
 {
@@ -131,8 +110,8 @@ Reply with ONLY valid JSON — no markdown fences, no preamble:
     const parsed: VerifiedResult = JSON.parse(rawText);
     const verified = applyMacroSanity(parsed);
 
-    if (candidates.some(c => c.rawContent) && verified.dataVerified) {
-      setAdminNutritionCache(query, verified).catch(() => {});
+    if (verified.dataVerified) {
+      setAdminNutritionCache(query, verified, uid).catch(() => {});
     }
 
     return NextResponse.json({ ok: true, result: verified });

@@ -17,7 +17,7 @@ export interface VerifiedNutrition {
   verificationNote: string;
 }
 
-export function useNutritionSearch() {
+export function useNutritionSearch(uid?: string | null) {
   const [state,  setState]  = useState<SearchState>('idle');
   const [result, setResult] = useState<VerifiedNutrition | null>(null);
   const [error,  setError]  = useState<string | null>(null);
@@ -27,9 +27,11 @@ export function useNutritionSearch() {
     setResult(null);
     setError(null);
 
+    const uidParam = uid ? `&uid=${uid}` : '';
+
     // Offline check — try cache only
     if (!navigator.onLine) {
-      const cacheRes = await fetch(`/api/nutrition/search?q=${encodeURIComponent(query)}`).catch(() => null);
+      const cacheRes = await fetch(`/api/nutrition/search?q=${encodeURIComponent(query)}${uidParam}`).catch(() => null);
       if (cacheRes?.ok) {
         const cacheData = await cacheRes.json();
         if (cacheData.tier === 'cache' && cacheData.candidates.length > 0) {
@@ -45,7 +47,7 @@ export function useNutritionSearch() {
 
     try {
       // Step 1: Fetch candidates
-      const searchRes  = await fetch(`/api/nutrition/search?q=${encodeURIComponent(query)}`);
+      const searchRes  = await fetch(`/api/nutrition/search?q=${encodeURIComponent(query)}${uidParam}`);
       const searchData = await searchRes.json();
 
       if (!searchData.candidates?.length) {
@@ -59,7 +61,7 @@ export function useNutritionSearch() {
       const verifyRes  = await fetch('/api/nutrition/verify', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ query, candidates: searchData.candidates }),
+        body:    JSON.stringify({ query, candidates: searchData.candidates, uid: uid ?? undefined }),
       });
       const verifyData = await verifyRes.json();
       if (!verifyData.ok) throw new Error(verifyData.error);
