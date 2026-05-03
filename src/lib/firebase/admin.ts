@@ -23,8 +23,9 @@ function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 100);
 }
 
-export async function getAdminNutritionCache(foodName: string) {
-  const snap = await adminDb.doc(`nutrition_cache/${toSlug(foodName)}`).get();
+export async function getAdminNutritionCache(foodName: string, uid?: string) {
+  if (!uid) return null;
+  const snap = await adminDb.doc(`users/${uid}/nutrition_cache/${toSlug(foodName)}`).get();
   if (!snap.exists) return null;
   const data = snap.data()!;
   const expiresMs = data.expiresAt?.toMillis?.() ?? (data.expiresAt?._seconds ?? 0) * 1000;
@@ -33,9 +34,10 @@ export async function getAdminNutritionCache(foodName: string) {
     : null;
 }
 
-export async function setAdminNutritionCache(foodName: string, payload: object) {
+export async function setAdminNutritionCache(foodName: string, payload: object, uid?: string) {
+  if (!uid) return;
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  await adminDb.doc(`nutrition_cache/${toSlug(foodName)}`).set({
+  await adminDb.doc(`users/${uid}/nutrition_cache/${toSlug(foodName)}`).set({
     foodName,
     cachedAt: new Date(),
     expiresAt: expires,

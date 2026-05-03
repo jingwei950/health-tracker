@@ -3,6 +3,7 @@ import {
   collection, doc, setDoc, getDoc, getDocs,
   query, where, orderBy, onSnapshot, deleteDoc,
   writeBatch, increment, serverTimestamp, arrayUnion, arrayRemove,
+  deleteField,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './config';
@@ -12,17 +13,20 @@ import type {
 } from '@/types/health.types';
 
 // ── Path helpers ───────────────────────────────────────────────
-const profilePath  = (uid: string)               => `users/${uid}/profile`;
+/** User profile lives on the user root doc `users/{uid}` (even segment count). */
+function userProfileDoc(uid: string) {
+  return doc(db, 'users', uid);
+}
 const prefsPath    = (uid: string)               => `users/${uid}/preferences/settings`;
 const nutLogPath   = (uid: string)               => `users/${uid}/nutrition_logs`;
 const actLogPath   = (uid: string)               => `users/${uid}/activity_logs`;
 const summaryPath  = (uid: string, date: string) => `users/${uid}/daily_summaries/${date}`;
-const cachePath    = (slug: string)              => `nutrition_cache/${slug}`;
+const cachePath    = (uid: string, slug: string) => `users/${uid}/nutrition_cache/${slug}`;
 
 // ── User ────────────────────────────────────────────────────────
 export async function createUserDocuments(uid: string, displayName: string, email: string) {
   const batch = writeBatch(db);
-  batch.set(doc(db, profilePath(uid)), {
+  batch.set(userProfileDoc(uid), {
     displayName, email,
     createdAt: serverTimestamp(),
     subscriptionTier: 'free',
@@ -35,7 +39,7 @@ export async function createUserDocuments(uid: string, displayName: string, emai
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
-  const snap = await getDoc(doc(db, profilePath(uid)));
+  const snap = await getDoc(userProfileDoc(uid));
   return snap.exists() ? snap.data() as UserProfile : null;
 }
 
@@ -45,7 +49,32 @@ export async function getUserPreferences(uid: string): Promise<UserPreferences |
 }
 
 export async function updateUserProfile(uid: string, data: Partial<UserProfile>) {
-  await setDoc(doc(db, profilePath(uid)), data, { merge: true });
+  await setDoc(userProfileDoc(uid), data, { merge: true });
+}
+
+/** Merge body metrics; pass `null` to remove a field from the profile document. */
+export async function updateUserBodyMetrics(
+  uid: string,
+  patch: { weightKg?: number | null; heightCm?: number | null },
+) {
+  const payload: Record<string, unknown> = {};
+  if ('weightKg' in patch) {
+    payload.weightKg = patch.weightKg === null ? deleteField() : patch.weightKg;
+  }
+  if ('heightCm' in patch) {
+    payload.heightCm = patch.heightCm === null ? deleteField() : patch.heightCm;
+  }
+  if (Object.keys(payload).length === 0) return;
+  await setDoc(userProfileDoc(uid), payload, { merge: true });
+}
+
+export function subscribeUserProfile(
+  uid: string,
+  cb: (profile: UserProfile | null) => void,
+): Unsubscribe {
+  return onSnapshot(userProfileDoc(uid), snap =>
+    cb(snap.exists() ? (snap.data() as UserProfile) : null),
+  );
 }
 
 // ── Nutrition logs ──────────────────────────────────────────────
@@ -193,16 +222,18 @@ function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 100);
 }
 
-export async function getNutritionCache(foodName: string) {
-  const snap = await getDoc(doc(db, cachePath(toSlug(foodName))));
+export async function getNutritionCache(foodName: string, uid?: string) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, cachePath(uid, toSlug(foodName))));
   if (!snap.exists()) return null;
   const data = snap.data();
   return (data.expiresAt?.toMillis?.() ?? 0) > Date.now() ? data : null;
 }
 
-export async function setNutritionCache(foodName: string, payload: object) {
+export async function setNutritionCache(foodName: string, payload: object, uid?: string) {
+  if (!uid) return;
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  await setDoc(doc(db, cachePath(toSlug(foodName))), {
+  await setDoc(doc(db, cachePath(uid, toSlug(foodName))), {
     foodName, cachedAt: serverTimestamp(), expiresAt: expires, ...payload,
   });
 }

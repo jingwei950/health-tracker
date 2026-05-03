@@ -1,7 +1,7 @@
 // src/proxy.ts — replaces the deprecated middleware.ts (Next.js 16+)
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_ROUTES       = ['/', '/login', '/signup', '/forgot-password'];
+const PUBLIC_ROUTES       = ['/login', '/signup', '/forgot-password'];
 const PUBLIC_API_PREFIXES = [
   '/api/auth',
   '/api/health',
@@ -13,9 +13,17 @@ const PUBLIC_API_PREFIXES = [
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC_ROUTES.includes(pathname))                                    return NextResponse.next();
   if (PUBLIC_API_PREFIXES.some(p => pathname.startsWith(p)))               return NextResponse.next();
   if (pathname.startsWith('/_next') || pathname.includes('.'))             return NextResponse.next();
+
+  const session = request.cookies.get('__session') ?? request.cookies.get('firebase_auth_token');
+
+  // Redirect already-authenticated users away from login
+  if (PUBLIC_ROUTES.includes(pathname) && session) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (PUBLIC_ROUTES.includes(pathname))                                    return NextResponse.next();
 
   if (pathname.startsWith('/api/')) {
     if (!request.headers.get('Authorization')?.startsWith('Bearer '))
@@ -23,7 +31,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = request.cookies.get('__session') ?? request.cookies.get('firebase_auth_token');
   if (!session) {
     const url = new URL('/login', request.url);
     url.searchParams.set('redirect', pathname);

@@ -12,12 +12,11 @@ const db = getFirestore();
 // user's profile (free tier) and default preferences if they don't exist yet.
 export const onUserCreated = onDocumentCreated("users/{uid}", async (event) => {
   const uid = event.params.uid;
-  const profileRef = db.doc(`users/${uid}/profile`);
-  if ((await profileRef.get()).exists) return;
+  const userRef = db.doc(`users/${uid}`);
 
   const batch = db.batch();
   batch.set(
-    profileRef,
+    userRef,
     { subscriptionTier: "free", createdAt: FieldValue.serverTimestamp() },
     { merge: true },
   );
@@ -55,7 +54,7 @@ export const deleteUserData = onCall(async (request) => {
     snap.docs.forEach((d) => batch.delete(d.ref));
     await batch.commit();
   }
-  await db.doc(`users/${uid}/profile`).delete();
+  await db.doc(`users/${uid}`).delete();
   await db.doc(`users/${uid}/preferences/settings`).delete();
   await getAuth().deleteUser(uid);
   return { success: true };

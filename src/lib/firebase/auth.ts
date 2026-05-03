@@ -7,6 +7,7 @@ import {
   EmailAuthProvider,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   reauthenticateWithCredential,
   createUserWithEmailAndPassword,
@@ -41,6 +42,10 @@ export const onAuthChange = (onUserChange: (user: User | null) => void) => {
 
 // Returns the currently signed-in user, or null if no one is logged in
 export const getCurrentUser = () => auth?.currentUser ?? null;
+
+// Sends a password reset email to the given address
+export const sendPasswordReset = (email: string) =>
+  sendPasswordResetEmail(auth, email);
 
 // Re-authenticates with the user's password, then permanently deletes their account
 export const deleteAccount = async (password: string) => {
