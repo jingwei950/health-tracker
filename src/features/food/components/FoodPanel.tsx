@@ -16,12 +16,14 @@ const inpCls = "w-full rounded-md border border-border bg-muted px-2.5 py-[7px] 
 const btnSmCls = "cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-[5px] text-xs font-medium text-card-foreground transition-colors hover:bg-muted";
 
 export function FoodPanel({
+  uid,
   goals,
   food,
   t,
   onLog,
   onRemove,
 }: {
+  uid?:     string | null;
   goals:    Goals;
   food:     NutritionLog[];
   t:        MacroTotals;
@@ -31,7 +33,7 @@ export function FoodPanel({
   const [query,    setQuery]    = useState('');
   const [logging,  setLogging]  = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
-  const { state, result, error, search, reset } = useNutritionSearch();
+  const { state, result, error, search, reset } = useNutritionSearch(uid ?? undefined);
 
   return (
     <div className="p-3 md:p-5">
@@ -120,7 +122,7 @@ export function FoodPanel({
           <div key={f.id} className="mb-2 rounded-[10px] border border-border bg-card px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-medium">{f.foodName}</div>
+                <div className="truncate text-[13px] font-medium text-foreground">{f.foodName}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
                   {f.servingSize}{f.servingUnit} · P:{f.protein}g C:{f.carbs}g F:{f.fat}g
                 </div>

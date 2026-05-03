@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { bmi, bmiInfo, pct, sleepScore } from "@/lib/health-track/nutrition";
 import type { MacroTotals } from "@/lib/health-track/nutrition";
 import type { BmiBand, Goals, SleepEntry, TabId } from "@/lib/health-track/types";
-import type { NutritionLog, ActivityLog } from "@/types/health.types";
+import type { NutritionLog } from "@/types/health.types";
 
 import { MacroDonut } from "@/components/MacroDonut";
 import { MacroProgressList } from "@/components/MacroProgressList";
@@ -77,8 +77,8 @@ export function DashboardPanel({
   recentFoods:  NutritionLog[];
   sessionCount: number;
   sleep:        SleepEntry[];
-  weightKg:     number;
-  heightCm:     number;
+  weightKg:     number | null;
+  heightCm:     number | null;
   onQuickAdd:   (id: string) => void;
   onGoEat:      (t: TabId) => void;
 }) {
@@ -86,8 +86,13 @@ export function DashboardPanel({
   const diff = net - goals.calories;
   const last = sleep[sleep.length - 1];
   const sc   = last ? sleepScore(last) : null;
-  const bv   = bmi(weightKg, heightCm);
-  const bi   = bmiInfo(bv);
+  const hasBmi =
+    weightKg != null &&
+    heightCm != null &&
+    Number.isFinite(weightKg) &&
+    Number.isFinite(heightCm);
+  const bv   = hasBmi ? bmi(weightKg, heightCm) : 0;
+  const bi   = hasBmi ? bmiInfo(bv) : null;
 
   let alert: ReactNode = null;
   if (t.calories > 0 && Math.abs(diff) > 500) {
@@ -151,7 +156,7 @@ export function DashboardPanel({
           <div className={ctCls}>Sleep</div>
           {last && sc != null ? (
             <>
-              <div className="text-2xl font-medium">{sc}</div>
+              <div className="text-2xl font-medium text-card-foreground">{sc}</div>
               <div className="mt-1">
                 <SleepBadge score={sc} />
               </div>
@@ -165,20 +170,26 @@ export function DashboardPanel({
         </div>
         <div className={cardCls}>
           <div className={ctCls}>BMI</div>
-          <div className="text-2xl font-medium" style={{ color: bi.color }}>
-            {bv.toFixed(1)}
-          </div>
-          <div className="mt-1">
-            <span
-              className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-              style={bandStyle(bi.band)}
-            >
-              {bi.label}
-            </span>
-          </div>
-          <div className="mt-1 text-[11px] text-muted-foreground">
-            {weightKg}kg · {heightCm}cm
-          </div>
+          {hasBmi && bi ? (
+            <>
+              <div className="text-2xl font-medium" style={{ color: bi.color }}>
+                {bv.toFixed(1)}
+              </div>
+              <div className="mt-1">
+                <span
+                  className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  style={bandStyle(bi.band)}
+                >
+                  {bi.label}
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {weightKg}kg · {heightCm}cm
+              </div>
+            </>
+          ) : (
+            <div className="text-xs text-muted-foreground">No data yet — add height &amp; weight in BMI</div>
+          )}
         </div>
         <div className={cardCls}>
           <div className={ctCls}>Activity</div>

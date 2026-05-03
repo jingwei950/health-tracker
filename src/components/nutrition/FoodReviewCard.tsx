@@ -11,7 +11,7 @@ interface Props {
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
-const cardCls     = "mt-0.5 rounded-[10px] border border-primary bg-card p-3";
+const cardCls     = "mt-0.5 rounded-[10px] border border-primary bg-card p-3 text-foreground";
 const inpCls      = "w-full rounded-md border border-border bg-muted px-2 py-1 text-[13px] text-foreground outline-none focus:border-primary box-border";
 const labelCls    = "block text-[11px] text-muted-foreground mb-0.5";
 const btnPrimCls  = "flex-1 cursor-pointer rounded-md border-none bg-primary px-3 py-[7px] text-[13px] font-medium text-primary-foreground transition-colors hover:opacity-90";
@@ -33,7 +33,7 @@ export function FoodReviewCard({ result, loading = false, onConfirm, onCancel }:
   return (
     <div className={cardCls}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="min-w-0 truncate text-[13px] font-medium">{edited.foodName}</div>
+        <div className="min-w-0 truncate text-[13px] font-medium text-foreground">{edited.foodName}</div>
         <span
           className="shrink-0 rounded px-2 py-0.5 text-[11px] font-medium"
           style={{

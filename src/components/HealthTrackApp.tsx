@@ -2,6 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { useStoredTheme } from "@/hooks/useStoredTheme";
+import { useRouter } from "next/navigation";
+
 import type { MacroTotals } from "@/lib/health-track/nutrition";
 import type {
   ActivityIntensity,
@@ -25,6 +28,9 @@ import { TopBar } from "./TopBar";
 
 import { useAuthContext }   from "@/contexts/AuthContext";
 import { useNutritionLogs, useActivityLogs } from "@/hooks/useTodayLogs";
+import { useUserProfileBody } from "@/hooks/useUserProfileBody";
+import { logOut } from "@/lib/firebase/auth";
+import { clearAuthCookie } from "@/lib/firebase/session";
 import {
   logFoodEntry, deleteFoodEntry,
   logActivityEntry, deleteActivityEntry,
@@ -32,16 +38,21 @@ import {
 import type { NutritionLog, ActivityLog } from "@/types/health.types";
 import type { VerifiedNutrition } from "@/hooks/useNutritionSearch";
 
+const ACTIVITY_METS: Record<ActivityIntensity, number> = {
+  low: 3.5,
+  medium: 6.0,
+  high: 9.0,
+};
+
 export function HealthTrackApp() {
+  const router = useRouter();
   const [tab, setTab] = useState<TabId>("db");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { theme, toggleTheme } = useStoredTheme();
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [goalsDialogKey, setGoalsDialogKey] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [goals, setGoals] = useState<Goals>(defaultGoals);
   const [sleep, setSleep] = useState<SleepEntry[]>(defaultSleep);
-  const [weightKg, setWeightKg] = useState(70);
-  const [heightCm, setHeightCm] = useState(174);
 
   const [atab, setAtab] = useState<"manual" | "watch">("manual");
   const [an, setAn] = useState("");
@@ -56,6 +67,8 @@ export function HealthTrackApp() {
   const { user } = useAuthContext();
   const uid = user?.uid ?? null;
   const today = new Date().toISOString().split('T')[0];
+
+  const { weightKg, heightCm, setWeightKg, setHeightCm } = useUserProfileBody(uid);
 
   const { logs: nutritionLogs } = useNutritionLogs(uid);
   const { logs: activityLogs }  = useActivityLogs(uid);
@@ -124,13 +137,11 @@ export function HealthTrackApp() {
     });
   }, [uid, nutritionLogs, today]);
 
-  const mets: Record<ActivityIntensity, number> = { low: 3.5, medium: 6.0, high: 9.0 };
-
   const addManualActivity = useCallback(async () => {
     const n = an.trim();
     const d = Number.parseFloat(ad);
-    if (!n || !d || d <= 0) return;
-    const met      = mets[ai] ?? 6;
+    if (!n || !d || d <= 0 || weightKg == null) return;
+    const met      = ACTIVITY_METS[ai] ?? 6;
     const calories = Math.round((met * weightKg * d) / 60);
     if (uid) {
       await logActivityEntry(uid, {
@@ -236,9 +247,11 @@ export function HealthTrackApp() {
     setGoalsOpen(true);
   }, []);
 
-  const handleToggleTheme = useCallback(() => {
-    setTheme((th) => (th === "dark" ? "light" : "dark"));
-  }, []);
+  const handleLogout = useCallback(async () => {
+    await logOut();
+    clearAuthCookie();
+    router.replace("/login");
+  }, [router]);
 
   return (
     <div
@@ -258,13 +271,15 @@ export function HealthTrackApp() {
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
           theme={theme}
-          onToggleTheme={handleToggleTheme}
+          onToggleTheme={toggleTheme}
+          onLogout={handleLogout}
         />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader
             onOpenGoals={handleOpenGoals}
             theme={theme}
-            onToggleTheme={handleToggleTheme}
+            onToggleTheme={toggleTheme}
+            onLogout={handleLogout}
           />
           <TopBar tab={tab} onOpenGoals={handleOpenGoals} />
           <main className="flex-1 overflow-y-auto">
@@ -283,6 +298,7 @@ export function HealthTrackApp() {
         ) : null}
         {tab === "fd" ? (
           <FoodPanel
+            uid={uid}
             goals={goals}
             food={nutritionLogs}
             t={t}

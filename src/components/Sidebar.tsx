@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight, LogOut, Moon, Sun } from "lucide-react";
 
 import { NAV_ITEMS } from "@/lib/health-track/nav-config";
 import type { TabId } from "@/lib/health-track/types";
@@ -13,6 +13,7 @@ export function Sidebar({
   onToggleCollapse,
   theme,
   onToggleTheme,
+  onLogout,
 }: {
   tab: TabId;
   onTab: (t: TabId) => void;
@@ -20,6 +21,7 @@ export function Sidebar({
   onToggleCollapse: () => void;
   theme: "dark" | "light";
   onToggleTheme: () => void;
+  onLogout: () => void;
 }) {
   return (
     <aside
@@ -108,6 +110,25 @@ export function Sidebar({
             )}
           >
             {theme === "dark" ? "Light mode" : "Dark mode"}
+          </span>
+        </button>
+
+        {/* Sign out */}
+        <button
+          type="button"
+          title="Sign out"
+          onClick={onLogout}
+          className="flex items-center gap-2.5 w-full px-[11px] py-[9px] rounded-lg border-none cursor-pointer bg-transparent text-muted-foreground hover:bg-muted transition-colors"
+        >
+          <LogOut className="size-4 shrink-0" strokeWidth={2} />
+          <span
+            className={cn(
+              "text-[13px] whitespace-nowrap",
+              "md:hidden lg:block",
+              collapsed && "lg:hidden",
+            )}
+          >
+            Sign out
           </span>
         </button>
 

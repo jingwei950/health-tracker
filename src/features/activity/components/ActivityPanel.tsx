@@ -30,7 +30,7 @@ export function ActivityPanel({
   onImportWatch,
   onRemove,
 }: {
-  weightKg: number;
+  weightKg: number | null;
   act: ActivityLog[];
   atab: "manual" | "watch";
   onAtab: (t: "manual" | "watch") => void;
@@ -49,7 +49,10 @@ export function ActivityPanel({
 }) {
   const met = mets[ai] ?? 6;
   const dur = Number.parseFloat(ad) || 0;
-  const est = ad ? Math.round((met * weightKg * dur) / 60) : 0;
+  const canEst = weightKg != null && Number.isFinite(weightKg);
+  const est =
+    ad && canEst ? Math.round((met * weightKg * dur) / 60) : null;
+  const addDisabled = weightKg == null || !an.trim() || !dur || dur <= 0;
 
   return (
     <div className="p-3 md:p-5">
@@ -117,7 +120,7 @@ export function ActivityPanel({
                 <option value="high">High (MET 9.0) — volleyball, HIIT</option>
               </select>
             </div>
-            {est > 0 ? (
+            {ad ? (
               <div
                 className="mt-2 flex items-center justify-between rounded-md border px-3 py-2 text-xs"
                 style={{
@@ -127,20 +130,33 @@ export function ActivityPanel({
                 }}
               >
                 <span>
-                  Est. burn: <strong>{est} kcal</strong>
+                  Est. burn:{" "}
+                  <strong>{est != null && est > 0 ? `${est} kcal` : "—"}</strong>
+                  {!canEst ? (
+                    <span className="ml-1 font-normal opacity-90">
+                      (set weight on the BMI tab)
+                    </span>
+                  ) : null}
                 </span>
-                <span
-                  className="rounded-full border px-2 py-0.5 text-[11px]"
-                  style={{
-                    borderColor: "var(--border)",
-                    color: "var(--muted-foreground)",
-                  }}
-                >
-                  est.
-                </span>
+                {est != null && est > 0 ? (
+                  <span
+                    className="rounded-full border px-2 py-0.5 text-[11px]"
+                    style={{
+                      borderColor: "var(--border)",
+                      color: "var(--muted-foreground)",
+                    }}
+                  >
+                    est.
+                  </span>
+                ) : null}
               </div>
             ) : null}
-            <button type="button" className={btnPrimaryCls} onClick={onAddManual}>
+            <button
+              type="button"
+              className={btnPrimaryCls}
+              disabled={addDisabled}
+              onClick={onAddManual}
+            >
               Add activity
             </button>
           </>
@@ -181,7 +197,7 @@ export function ActivityPanel({
           <div key={a.id} className="mb-2 rounded-[10px] border border-border bg-card px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="text-[13px] font-medium">{a.activityName}</div>
+                <div className="text-[13px] font-medium text-foreground">{a.activityName}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
                   {a.durationMinutes ? `${a.durationMinutes} min` : ""}
                   {a.intensityLevel

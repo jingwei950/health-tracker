@@ -1,15 +1,17 @@
 "use client";
 
-import { Activity, Moon, Sun, Target } from "lucide-react";
+import { Activity, LogOut, Moon, Sun, Target } from "lucide-react";
 
 export function AppHeader({
   onOpenGoals,
   theme,
   onToggleTheme,
+  onLogout,
 }: {
   onOpenGoals: () => void;
   theme: "dark" | "light";
   onToggleTheme: () => void;
+  onLogout: () => void;
 }) {
   return (
     <header className="md:hidden flex items-center justify-between border-b border-border bg-card px-3.5 py-2.5">
@@ -39,6 +41,14 @@ export function AppHeader({
           ) : (
             <Sun className="size-[13px]" strokeWidth={2} />
           )}
+        </button>
+        <button
+          type="button"
+          className="flex size-[30px] cursor-pointer items-center justify-center rounded-md border border-border bg-transparent text-card-foreground hover:bg-muted"
+          title="Sign out"
+          onClick={onLogout}
+        >
+          <LogOut className="size-[13px]" strokeWidth={2} />
         </button>
       </div>
     </header>
