@@ -56,7 +56,7 @@ export function ActivityPanel({
 
   return (
     <div className="p-3 md:p-5">
-      <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3">
+      <div className="mb-2.5 rounded-[8px] border border-border bg-card p-4">
         <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Log activity
         </div>
@@ -194,7 +194,7 @@ export function ActivityPanel({
       </div>
       {act.length ? (
         [...act].reverse().map((a) => (
-          <div key={a.id} className="mb-2 rounded-[10px] border border-border bg-card px-3 py-2">
+          <div key={a.id} className="mb-2 rounded-[8px] border border-border bg-card px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="text-[13px] font-medium text-foreground">{a.activityName}</div>

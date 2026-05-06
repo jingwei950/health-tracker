@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -54,7 +55,7 @@ describe("FoodPanel", () => {
       estimated:   false,
       logSource:   "search",
       date:        "2026-05-02",
-      loggedAt:    null as any,
+      loggedAt:    Timestamp.now(),
     };
     render(
       <FoodPanel

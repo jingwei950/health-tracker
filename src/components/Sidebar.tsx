@@ -1,6 +1,13 @@
 "use client";
 
-import { Activity, ChevronLeft, ChevronRight, LogOut, Moon, Sun } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  LogOut,
+  Moon,
+  Sun,
+} from "lucide-react";
 
 import { NAV_ITEMS } from "@/lib/health-track/nav-config";
 import type { TabId } from "@/lib/health-track/types";
@@ -26,19 +33,18 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col shrink-0 bg-card border-r border-border overflow-hidden transition-[width] duration-200",
-        "md:w-[58px]",
-        collapsed ? "lg:w-[58px]" : "lg:w-[200px]",
+        "hidden md:flex flex-col shrink-0 bg-sidebar border-r border-border overflow-hidden transition-[width] duration-200",
+        "md:w-[54px]",
+        collapsed ? "lg:w-[54px]" : "lg:w-[196px]",
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 px-3 border-b border-border min-h-[52px]">
-        <div className="size-7 shrink-0 rounded-lg bg-primary flex items-center justify-center">
-          <Activity className="size-3.5 text-primary-foreground" strokeWidth={2.5} />
+      <div className="flex min-h-[52px] items-center gap-2.5 border-b border-border px-3.5 py-3.5">
+        <div className="flex size-[26px] shrink-0 items-center justify-center rounded-[6px] bg-primary">
+          <Flame className="size-[13px] text-primary-foreground" strokeWidth={2.5} />
         </div>
         <span
           className={cn(
-            "text-sm font-bold text-foreground whitespace-nowrap",
+            "whitespace-nowrap text-[13px] font-bold tracking-wide text-foreground",
             "md:hidden lg:block",
             collapsed && "lg:hidden",
           )}
@@ -47,8 +53,7 @@ export function Sidebar({
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-0.5 p-[5px]">
+      <nav className="flex flex-1 flex-col gap-px p-2">
         {NAV_ITEMS.map(({ id, label, Icon }) => {
           const active = tab === id;
           return (
@@ -58,16 +63,17 @@ export function Sidebar({
               title={label}
               onClick={() => onTab(id)}
               className={cn(
-                "flex items-center gap-2.5 w-full px-[11px] py-[9px] rounded-lg border-none cursor-pointer transition-colors text-left",
+                "flex w-full cursor-pointer items-center gap-2 rounded-[5px] border-none px-2.5 py-2 text-left transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-transparent text-muted-foreground hover:bg-muted",
+                  ? "bg-[color-mix(in_oklch,var(--primary)_12%,transparent)] text-primary"
+                  : "bg-transparent text-[var(--sub-foreground)] hover:bg-muted/60",
               )}
             >
-              <Icon className="size-4 shrink-0" strokeWidth={2} />
+              <Icon className="size-[15px] shrink-0" strokeWidth={2} />
               <span
                 className={cn(
-                  "text-[13px] whitespace-nowrap flex-1",
+                  "flex-1 whitespace-nowrap text-xs",
+                  active ? "font-semibold" : "font-normal",
                   "md:hidden lg:block",
                   collapsed && "lg:hidden",
                 )}
@@ -77,7 +83,7 @@ export function Sidebar({
               {active && (
                 <span
                   className={cn(
-                    "size-1.5 rounded-full bg-primary-foreground shrink-0",
+                    "size-[5px] shrink-0 rounded-full bg-primary",
                     "md:hidden lg:block",
                     collapsed && "lg:hidden",
                   )}
@@ -88,23 +94,21 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="flex flex-col gap-0.5 border-t border-border p-[5px]">
-        {/* Theme toggle */}
+      <div className="flex flex-col gap-px border-t border-border p-2">
         <button
           type="button"
           title={theme === "dark" ? "Light mode" : "Dark mode"}
           onClick={onToggleTheme}
-          className="flex items-center gap-2.5 w-full px-[11px] py-[9px] rounded-lg border-none cursor-pointer bg-transparent text-muted-foreground hover:bg-muted transition-colors"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] border-none bg-transparent px-2.5 py-2 text-muted-foreground transition-colors hover:bg-muted/60"
         >
           {theme === "dark" ? (
-            <Sun className="size-4 shrink-0" strokeWidth={2} />
+            <Sun className="size-[15px] shrink-0" strokeWidth={2} />
           ) : (
-            <Moon className="size-4 shrink-0" strokeWidth={2} />
+            <Moon className="size-[15px] shrink-0" strokeWidth={2} />
           )}
           <span
             className={cn(
-              "text-[13px] whitespace-nowrap",
+              "whitespace-nowrap text-xs",
               "md:hidden lg:block",
               collapsed && "lg:hidden",
             )}
@@ -113,17 +117,16 @@ export function Sidebar({
           </span>
         </button>
 
-        {/* Sign out */}
         <button
           type="button"
           title="Sign out"
           onClick={onLogout}
-          className="flex items-center gap-2.5 w-full px-[11px] py-[9px] rounded-lg border-none cursor-pointer bg-transparent text-muted-foreground hover:bg-muted transition-colors"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] border-none bg-transparent px-2.5 py-2 text-muted-foreground transition-colors hover:bg-muted/60"
         >
-          <LogOut className="size-4 shrink-0" strokeWidth={2} />
+          <LogOut className="size-[15px] shrink-0" strokeWidth={2} />
           <span
             className={cn(
-              "text-[13px] whitespace-nowrap",
+              "whitespace-nowrap text-xs",
               "md:hidden lg:block",
               collapsed && "lg:hidden",
             )}
@@ -132,19 +135,18 @@ export function Sidebar({
           </span>
         </button>
 
-        {/* Collapse toggle — desktop only */}
         <button
           type="button"
           title={collapsed ? "Expand" : "Collapse"}
           onClick={onToggleCollapse}
-          className="hidden lg:flex items-center gap-2.5 w-full px-[11px] py-[9px] rounded-lg border-none cursor-pointer bg-transparent text-muted-foreground hover:bg-muted transition-colors"
+          className="hidden cursor-pointer items-center gap-2 rounded-[5px] border-none bg-transparent px-2.5 py-2 text-muted-foreground transition-colors hover:bg-muted/60 lg:flex"
         >
           {collapsed ? (
-            <ChevronRight className="size-4 shrink-0" strokeWidth={2} />
+            <ChevronRight className="size-[15px] shrink-0" strokeWidth={2} />
           ) : (
-            <ChevronLeft className="size-4 shrink-0" strokeWidth={2} />
+            <ChevronLeft className="size-[15px] shrink-0" strokeWidth={2} />
           )}
-          <span className={cn("text-[13px]", collapsed && "hidden")}>Collapse</span>
+          <span className={cn("text-xs", collapsed && "hidden")}>Collapse</span>
         </button>
       </div>
     </aside>

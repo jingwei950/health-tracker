@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, LogOut, Moon, Sun, Target } from "lucide-react";
+import { Flame, LogOut, Moon, Sun, Target } from "lucide-react";
 
 export function AppHeader({
   onOpenGoals,
@@ -16,8 +16,8 @@ export function AppHeader({
   return (
     <header className="md:hidden flex items-center justify-between border-b border-border bg-card px-3.5 py-2.5">
       <div className="flex items-center gap-2 text-[15px] font-medium text-foreground">
-        <div className="flex size-[26px] shrink-0 items-center justify-center rounded-md bg-primary">
-          <Activity className="size-3.5 text-primary-foreground" strokeWidth={2.5} />
+        <div className="flex size-[26px] shrink-0 items-center justify-center rounded-[6px] bg-primary">
+          <Flame className="size-[13px] text-primary-foreground" strokeWidth={2.5} />
         </div>
         HealthTrack SG
       </div>

@@ -2,6 +2,7 @@
 
 import { NAV_ITEMS } from "@/lib/health-track/nav-config";
 import type { TabId } from "@/lib/health-track/types";
+import { cn } from "@/lib/utils";
 
 export function BottomNav({
   tab,
@@ -11,7 +12,7 @@ export function BottomNav({
   onTab: (t: TabId) => void;
 }) {
   return (
-    <nav className="md:hidden flex h-[58px] shrink-0 items-stretch bg-card border-t border-border">
+    <nav className="flex h-[58px] shrink-0 items-stretch border-t border-border bg-sidebar md:hidden">
       {NAV_ITEMS.map(({ id, label, Icon }) => {
         const active = tab === id;
         return (
@@ -19,11 +20,14 @@ export function BottomNav({
             key={id}
             type="button"
             onClick={() => onTab(id)}
-            className="flex flex-1 flex-col items-center justify-center gap-[3px] border-none bg-transparent cursor-pointer"
+            className={cn(
+              "flex flex-1 cursor-pointer flex-col items-center justify-center gap-[3px] border-none bg-transparent pt-0.5 transition-colors",
+              active &&
+                "bg-[color-mix(in_oklch,var(--primary)_10%,transparent)]",
+            )}
             style={{
-              color: active ? "var(--primary)" : "var(--muted-foreground)",
+              color: active ? "var(--primary)" : "var(--sub-foreground)",
               borderTop: active ? "2px solid var(--primary)" : "2px solid transparent",
-              paddingTop: 2,
             }}
           >
             <Icon className="size-[18px]" strokeWidth={2} />

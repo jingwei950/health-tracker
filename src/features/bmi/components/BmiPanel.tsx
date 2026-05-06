@@ -151,7 +151,7 @@ export function BmiPanel({
 
   return (
     <div className="p-3 md:p-5">
-      <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3">
+      <div className="mb-2.5 rounded-[8px] border border-border bg-card p-4">
         <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Height &amp; weight
         </div>
@@ -165,7 +165,7 @@ export function BmiPanel({
       </div>
       {hasBoth && bi ? (
         <>
-          <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3 text-center">
+          <div className="mb-2.5 rounded-[8px] border border-border bg-card p-4 text-center">
             <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
               Your BMI
             </div>
@@ -193,7 +193,7 @@ export function BmiPanel({
             </div>
           </div>
           {range ? (
-            <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3">
+            <div className="mb-2.5 rounded-[8px] border border-border bg-card p-4">
               <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                 Ideal weight range for {heightCm} cm
               </div>
@@ -216,7 +216,7 @@ export function BmiPanel({
           ) : null}
         </>
       ) : (
-        <div className="mb-2.5 rounded-[10px] border border-border bg-card p-3 text-center text-xs text-muted-foreground">
+        <div className="mb-2.5 rounded-[8px] border border-border bg-card p-4 text-center text-xs text-muted-foreground">
           Enter height (100–250 cm) and weight (20–300 kg), then click Add or Update to save and see
           your BMI.
         </div>
