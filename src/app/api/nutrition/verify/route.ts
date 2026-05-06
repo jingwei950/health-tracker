@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiModel }         from '@/lib/ai/gemini';
 import { macroSanityCheck }       from '@/lib/ai/macro-sanity';
 import { setAdminNutritionCache } from '@/lib/firebase/admin';
+import { resolveSourceUrlFromCandidates } from '@/lib/health-track/nutrition-source-url';
 import type { NutritionCandidate } from '../search/route';
 
 export const runtime = 'nodejs';
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     const candidateSummary = candidates.map((c, i) =>
       `Candidate ${i + 1} — ${c.foodName}:\n  Source: ${c.source}\n` +
+      `  URL: ${c.url?.trim() ? c.url : '(none)'}\n` +
       (c.rawContent
         ? `  Web snippet: ${c.rawContent.slice(0, 600)}`
         : `  Nutrition: ${c.calories} kcal · P ${c.protein}g · C ${c.carbs}g · F ${c.fat}g · ${c.servingSize}${c.servingUnit}`)
@@ -86,7 +88,7 @@ Tasks:
 3. Always return numeric values for calories, protein, carbs, fat, servingSize — never null or 0 unless the food genuinely has none
 4. Set dataVerified to true ONLY if data is from a credible source (HPB, HealthHub, official nutrition database, or official brand/restaurant website) and internally consistent
 5. Set dataVerified to false and note "Estimated from food knowledge" if using estimates rather than extracted data
-6. Set sourceUrl to the URL from the "[Source URL: ...]" line in the web snippet, or the HPB candidate's URL if using HPB data, or "" if absent
+6. Set sourceUrl to a FULL absolute URL only: copy exactly from the "URL:" line above for the candidate you use, or from the "[Source URL: ...]" line inside the web snippet. Use "" if there is no URL — NEVER put the source name (e.g. "HPB FoodID") or any non-URL text in sourceUrl
 
 Reply with ONLY valid JSON — no markdown fences, no preamble:
 {
@@ -108,7 +110,11 @@ Reply with ONLY valid JSON — no markdown fences, no preamble:
       .replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
 
     const parsed: VerifiedResult = JSON.parse(rawText);
-    const verified = applyMacroSanity(parsed);
+    const merged: VerifiedResult = {
+      ...parsed,
+      sourceUrl: resolveSourceUrlFromCandidates(parsed, candidates),
+    };
+    const verified = applyMacroSanity(merged);
 
     if (verified.dataVerified) {
       setAdminNutritionCache(query, verified, uid).catch(() => {});
