@@ -256,7 +256,7 @@ export function HealthTrackApp() {
   return (
     <div
       className={cn(
-        "min-h-svh bg-background font-sans text-sm leading-normal",
+        "min-h-svh bg-background font-sans leading-normal text-foreground",
         theme === "dark" && "dark",
       )}
     >
@@ -281,13 +281,23 @@ export function HealthTrackApp() {
             onToggleTheme={toggleTheme}
             onLogout={handleLogout}
           />
-          <TopBar tab={tab} onOpenGoals={handleOpenGoals} />
+          <TopBar
+            tab={tab}
+            onOpenGoals={handleOpenGoals}
+            userInitial={
+              user?.displayName?.trim()?.[0] ??
+              user?.email?.trim()?.[0] ??
+              null
+            }
+          />
           <main className="flex-1 overflow-y-auto">
         {tab === "db" ? (
           <DashboardPanel
             goals={goals}
             t={t}
             recentFoods={recentFoods}
+            nutritionLogs={nutritionLogs}
+            activityLogs={activityLogs}
             sessionCount={sessionCount}
             sleep={sleep}
             weightKg={weightKg}

@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HealthTrack SG — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* light (default) */
+  :root {
+    --bg:        oklch(0.9700 0 0);
+    --surface:   oklch(1.0000 0 0);
+    --card:      oklch(0.9670 0.0030 264.54);
+    --card2:     oklch(0.9300 0.0020 264.54);
+    --border:    oklch(0.8800 0.0040 286.32);
+    --fg:        oklch(0.2069 0.0098 285.51);
+    --muted-fg:  oklch(0.5517 0.0138 285.93);
+    --sub-fg:    oklch(0.3800 0.0129 286.06);
+    --primary:   oklch(0.7500 0.1487 115.62);
+    --primary-dim: oklch(0.8974 0.1487 115.62 / 0.15);
+    --success:   oklch(0.5490 0.1572 162.48);
+    --warning:   oklch(0.6290 0.1510 85.87);
+    --danger:    oklch(0.5800 0.1921 22.22);
+    --info:      oklch(0.5010 0.1361 243.13);
+    --chart-1:   oklch(0.7500 0.1487 115.62);
+    --chart-2:   oklch(0.6858 0.1175 167.25);
+    --chart-3:   oklch(0.5851 0.0996 193.02);
+    --chart-4:   oklch(0.4864 0.0754 214.99);
+    --chart-5:   oklch(0.3883 0.0410 237.37);
+    --icon-on-primary: oklch(1 0 0);
+    --radius: 2px;
+    --font-sans: 'Chakra Petch', ui-sans-serif, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --track: 0.04em;
+  }
+  /* dark */
+  .dark {
+    --bg:        oklch(0.1591 0 0);
+    --surface:   oklch(0.1800 0 0);
+    --card:      oklch(0.2002 0 0);
+    --card2:     oklch(0.2280 0 0);
+    --border:    oklch(0.3800 0.0055 286.03);
+    --fg:        oklch(0.9674 0.0013 286.37);
+    --muted-fg:  oklch(0.5517 0.0138 285.93);
+    --sub-fg:    oklch(0.7118 0.0129 286.06);
+    --primary:   oklch(0.8974 0.1487 115.62);
+    --primary-dim: oklch(0.8974 0.1487 115.62 / 0.18);
+    --success:   oklch(0.7490 0.1572 162.48);
+    --warning:   oklch(0.8290 0.1510 85.87);
+    --danger:    oklch(0.7136 0.1921 22.22);
+    --info:      oklch(0.7010 0.1361 243.13);
+    --chart-1:   oklch(0.8974 0.1487 115.62);
+    --chart-2:   oklch(0.6858 0.1175 167.25);
+    --chart-3:   oklch(0.5851 0.0996 193.02);
+    --chart-4:   oklch(0.4864 0.0754 214.99);
+    --chart-5:   oklch(0.3883 0.0410 237.37);
+    --icon-on-primary: oklch(0.15 0 0);
+  }
+  html, body, #root { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    letter-spacing: var(--track);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  button { font-family: var(--font-sans); letter-spacing: var(--track); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useCallback } = React;
+
+/* ── design tokens ── */
+const C = {
+  bg:       'var(--bg)',
+  surface:  'var(--surface)',
+  card:     'var(--card)',
+  card2:    'var(--card2)',
+  border:   'var(--border)',
+  fg:       'var(--fg)',
+  muted:    'var(--muted-fg)',
+  sub:      'var(--sub-fg)',
+  primary:  'var(--primary)',
+  pDim:     'var(--primary-dim)',
+  success:  'var(--success)',
+  warning:  'var(--warning)',
+  danger:   'var(--danger)',
+  info:     'var(--info)',
+  c1:       'var(--chart-1)',
+  c3:       'var(--chart-3)',
+  c5:       'var(--chart-5)',
+};
+
+/* ── icons ── */
+const Ic = ({ d, size=16, sw=2, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <path d={d} />
+  </svg>
+);
+const ICONS = {
+  dash:    "M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 3h2m0 0h2m-2 0v-2m0 2v2",
+  eat:     "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7",
+  move:    "M22 12h-4l-3 9L9 3l-3 9H2",
+  sleep:   "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z",
+  bmi:     "M3 3v18h18M9 9l4 4 4-8",
+  target:  "M12 12m-3 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0M12 2v2M12 20v2M2 12h2M20 12h2",
+  sun:     "M12 12m-4 0a4 4 0 1 0 8 0 4 4 0 0 0-8 0M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42",
+  moon:    "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z",
+  plus:    "M12 5v14M5 12h14",
+  search:  "M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z",
+  fire:    "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3Z",
+  chevL:   "M15 18l-6-6 6-6",
+  chevR:   "M9 18l6-6-6-6",
+  trash:   "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6",
+  moon2:   "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+  star:    "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  heart:   "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z",
+  zap:     "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+};
+
+/* ── data ── */
+const DATA = {
+  cal:    { in: 1840, burn: 420, goal: 2200 },
+  macros: [
+    { name: "Protein", g: 92,  goal: 150, color: C.c1, label: "P" },
+    { name: "Carbs",   g: 210, goal: 275, color: C.warning, label: "C" },
+    { name: "Fat",     g: 58,  goal: 73,  color: C.danger, label: "F" },
+  ],
+  sleep:    { score: 78, hours: 7.2, label: "Fair", date: "Apr 19", stages: { deep: 22, rem: 19, light: 45, awake: 14 } },
+  bmi:      { value: 23.1, label: "Healthy", color: C.success, weight: 70, height: 174 },
+  activity: { burn: 420, sessions: 2, goal: 600 },
+  foods: [
+    { id: 1, name: "Chicken Rice", cal: 520, pro: 32, carb: 68, fat: 12 },
+    { id: 2, name: "Kaya Toast",   cal: 210, pro: 5,  carb: 36, fat: 7  },
+    { id: 3, name: "Teh Tarik",    cal: 130, pro: 3,  carb: 22, fat: 4  },
+    { id: 4, name: "Milo",         cal: 140, pro: 4,  carb: 28, fat: 2  },
+    { id: 5, name: "Nasi Lemak",   cal: 840, pro: 28, carb: 80, fat: 45 },
+  ],
+  acts: [
+    { id: 1, name: "Morning Run",   dur: 35, cal: 310, intensity: "High" },
+    { id: 2, name: "Gym – Weights", dur: 45, cal: 110, intensity: "Med"  },
+  ],
+  week: [
+    { day: "M", cal: 1920 }, { day: "T", cal: 2100 }, { day: "W", cal: 1780 },
+    { day: "T", cal: 2340 }, { day: "F", cal: 1650 }, { day: "S", cal: 1840 },
+    { day: "S", cal: 0 },
+  ],
+  heartWeek: [62,65,60,63,58,64,61],
+};
+
+const NAV = [
+  { id: "db", label: "Dashboard", icon: "dash" },
+  { id: "fd", label: "Nutrition",  icon: "eat"  },
+  { id: "ac", label: "Activity",   icon: "move" },
+  { id: "sl", label: "Sleep",      icon: "sleep"},
+  { id: "bm", label: "BMI",        icon: "bmi"  },
+];
+
+/* ── primitives ── */
+const Label = ({ children, style }) => (
+  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: C.muted, marginBottom: 10, ...style }}>
+    {children}
+  </div>
+);
+
+const Card = ({ children, style, onClick }) => (
+  <div onClick={onClick} style={{
+    background: C.card, border: `1px solid ${C.border}`, borderRadius: 8,
+    padding: 16, ...style,
+    cursor: onClick ? 'pointer' : undefined,
+    transition: 'border-color .15s',
+  }}
+  onMouseEnter={onClick ? e => e.currentTarget.style.borderColor = C.primary : undefined}
+  onMouseLeave={onClick ? e => e.currentTarget.style.borderColor = C.border : undefined}
+  >
+    {children}
+  </div>
+);
+
+const Chip = ({ label, color }) => (
+  <span style={{
+    background: `color-mix(in oklch, ${color} 14%, transparent)`,
+    color, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600,
+    letterSpacing: '0.04em',
+  }}>{label}</span>
+);
+
+const MiniBar = ({ v, max, color, h=4 }) => (
+  <div style={{ height: h, background: C.card2, borderRadius: 2, overflow: 'hidden', marginTop: 6 }}>
+    <div style={{ height: '100%', width: `${Math.min(100, Math.round((v/max)*100))}%`, background: color, borderRadius: 2, transition: 'width .4s' }} />
+  </div>
+);
+
+/* ── Calorie Ring ── */
+function CalRing({ consumed, burned, goal }) {
+  const net = consumed - burned;
+  const pct = Math.min(1, consumed / goal);
+  const r = 62, cx = 70, cy = 70, sw = 9;
+  const circ = 2 * Math.PI * r;
+  const dash = pct * circ;
+  const burnPct = Math.min(1, burned / goal);
+  const burnDash = burnPct * circ;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <svg width={140} height={140} viewBox="0 0 140 140">
+          {/* track */}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.card2} strokeWidth={sw} />
+          {/* consumed arc */}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.primary} strokeWidth={sw}
+            strokeDasharray={`${dash} ${circ - dash}`}
+            strokeDashoffset={circ * 0.25}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray .5s' }} />
+          {/* burned inner ring */}
+          <circle cx={cx} cy={cy} r={r - sw - 4} fill="none" stroke={C.card2} strokeWidth={sw - 2} />
+          <circle cx={cx} cy={cy} r={r - sw - 4} fill="none" stroke={C.danger} strokeWidth={sw - 2}
+            strokeDasharray={`${burnDash * (r - sw - 4) / r} ${circ}`}
+            strokeDashoffset={(2 * Math.PI * (r - sw - 4)) * 0.25}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray .5s' }} />
+          {/* center text */}
+          <text x={cx} y={cy - 10} textAnchor="middle" fontSize={26} fontWeight={700}
+            fill={C.fg} fontFamily="'Chakra Petch', sans-serif">{consumed.toLocaleString()}</text>
+          <text x={cx} y={cy + 6} textAnchor="middle" fontSize={9} fill={C.muted}
+            fontFamily="'Chakra Petch', sans-serif" letterSpacing="0.08em">CONSUMED</text>
+          <text x={cx} y={cy + 20} textAnchor="middle" fontSize={11} fontWeight={600}
+            fill={net > goal ? C.warning : C.success} fontFamily="'Chakra Petch', sans-serif">
+            {net.toLocaleString()} net
+          </text>
+        </svg>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 10, color: C.muted, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>Goal</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: C.fg }}>{goal.toLocaleString()} <span style={{ fontSize: 11, fontWeight: 400, color: C.muted }}>kcal</span></div>
+          <div style={{ marginTop: 6, height: 4, background: C.card2, borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${pct*100}%`, background: C.primary, borderRadius: 2 }} />
+          </div>
+          <div style={{ marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10, color: C.muted }}>{Math.round(pct*100)}% of goal</span>
+            <span style={{ fontSize: 10, color: C.muted }}>{(goal - consumed).toLocaleString()} left</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ flex: 1, padding: '8px 10px', background: C.card2, borderRadius: 6, borderLeft: `3px solid ${C.danger}` }}>
+            <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Burned</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.danger, marginTop: 2 }}>{burned}</div>
+            <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+          </div>
+          <div style={{ flex: 1, padding: '8px 10px', background: C.card2, borderRadius: 6, borderLeft: `3px solid ${C.success}` }}>
+            <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Remaining</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.success, marginTop: 2 }}>{Math.max(0, goal - consumed)}</div>
+            <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Macro bars ── */
+function MacroBars({ macros }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {macros.map(({ name, g, goal, color, label }) => {
+        const p = Math.round((g/goal)*100);
+        return (
+          <div key={name}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 4, background: `color-mix(in oklch, ${color} 15%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color, letterSpacing: 0 }}>{label}</div>
+                <span style={{ fontSize: 12, color: C.sub }}>{name}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color }}>{g}g</span>
+                <span style={{ fontSize: 10, color: C.muted }}>/ {goal}g</span>
+                <span style={{ fontSize: 10, color: C.muted, minWidth: 28, textAlign: 'right' }}>{p}%</span>
+              </div>
+            </div>
+            <div style={{ height: 5, background: C.card2, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(100, p)}%`, background: color, borderRadius: 2 }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Week Chart ── */
+function WeekChart({ week, goal }) {
+  const max = Math.max(...week.filter(d => d.cal > 0).map(d => d.cal), goal);
+  const today = 5; // Saturday = index 5
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 72 }}>
+        {week.map(({ day, cal }, i) => {
+          const h = cal ? Math.round((cal / max) * 64) : 3;
+          const isToday = i === today;
+          const over = cal > goal;
+          const color = cal === 0 ? C.border : isToday ? C.primary : over ? C.warning : `color-mix(in oklch, ${C.primary} 40%, transparent)`;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              {cal > 0 && (
+                <div style={{ fontSize: 8, color: isToday ? C.primary : C.muted, fontWeight: isToday ? 700 : 400, letterSpacing: 0 }}>
+                  {(cal/1000).toFixed(1)}k
+                </div>
+              )}
+              <div style={{
+                width: '100%', borderRadius: '3px 3px 0 0', height: h,
+                background: color,
+                position: 'relative',
+              }} />
+              <span style={{ fontSize: 9, color: isToday ? C.fg : C.muted, fontWeight: isToday ? 700 : 400 }}>{day}</span>
+            </div>
+          );
+        })}
+      </div>
+      {/* goal line label */}
+      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 16, height: 1, borderTop: `1.5px dashed ${C.muted}` }} />
+        <span style={{ fontSize: 9, color: C.muted }}>Goal {goal.toLocaleString()} kcal</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Stat tile ── */
+function StatTile({ label, value, unit, sub, color, icon, badge }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Label style={{ marginBottom: 0 }}>{label}</Label>
+        <div style={{ width: 26, height: 26, borderRadius: 6, background: `color-mix(in oklch, ${color} 14%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+          <Ic d={ICONS[icon]} size={13} sw={2} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+        <span style={{ fontSize: 28, fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
+        {unit && <span style={{ fontSize: 12, color: C.muted }}>{unit}</span>}
+      </div>
+      {badge && <div>{badge}</div>}
+      {sub && <div style={{ fontSize: 11, color: C.muted }}>{sub}</div>}
+    </div>
+  );
+}
+
+/* ── Heart sparkline ── */
+function HeartSparkline({ data }) {
+  const min = Math.min(...data), max = Math.max(...data);
+  const w = 80, h = 28;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / (max - min || 1)) * (h - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={w} height={h} style={{ overflow: 'visible' }}>
+      <polyline points={pts} fill="none" stroke={C.danger} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={pts.split(' ').pop().split(',')[0]} cy={pts.split(' ').pop().split(',')[1]} r={2.5} fill={C.danger} />
+    </svg>
+  );
+}
+
+/* ── Activity log row ── */
+function ActRow({ name, dur, cal, intensity }) {
+  const iColor = intensity === 'High' ? C.danger : C.warning;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ width: 32, height: 32, borderRadius: 6, background: `color-mix(in oklch, ${C.danger} 12%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.danger, flexShrink: 0 }}>
+        <Ic d={ICONS.zap} size={13} sw={2} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 600 }}>{name}</div>
+        <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{dur} min · <span style={{ color: iColor }}>{intensity}</span></div>
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.danger }}>{cal}</div>
+        <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Food log row ── */
+function FoodRow({ name, cal, pro, carb, fat }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ width: 32, height: 32, borderRadius: 6, background: C.pDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary, flexShrink: 0 }}>
+        <Ic d={ICONS.eat} size={13} sw={2} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+        <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>P {pro}g · C {carb}g · F {fat}g</div>
+      </div>
+      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.primary }}>{cal}</div>
+        <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Dashboard panel ── */
+function DashboardPanel({ onNav }) {
+  const { cal, macros, sleep, bmi, activity, week, acts, foods, heartWeek } = DATA;
+  const net = cal.in - cal.burn;
+  const diff = net - cal.goal;
+
+  return (
+    <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* alert */}
+      {Math.abs(diff) > 300 && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 6, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8,
+          background: `color-mix(in oklch, ${diff > 0 ? C.warning : C.info} 10%, transparent)`,
+          border: `1px solid color-mix(in oklch, ${diff > 0 ? C.warning : C.info} 40%, transparent)`,
+          color: diff > 0 ? C.warning : C.info,
+        }}>
+          <Ic d={ICONS.zap} size={14} sw={2.5} />
+          {diff > 0 ? `${diff} kcal above your goal today` : `${Math.abs(diff)} kcal below your goal — consider a snack`}
+        </div>
+      )}
+
+      {/* top row: calorie ring + macros */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <Card>
+          <Label>Calories today</Label>
+          <CalRing consumed={cal.in} burned={cal.burn} goal={cal.goal} />
+        </Card>
+        <Card>
+          <Label>Macronutrients</Label>
+          <MacroBars macros={macros} />
+          {/* stacked mini bar */}
+          <div style={{ marginTop: 14, height: 6, borderRadius: 3, overflow: 'hidden', display: 'flex', gap: 1 }}>
+            {macros.map(({ name, g, color }) => {
+              const total = macros.reduce((s, m) => s + m.g, 0);
+              return <div key={name} style={{ flex: g / total, background: color }} />;
+            })}
+          </div>
+          <div style={{ marginTop: 5, display: 'flex', gap: 10 }}>
+            {macros.map(({ name, g, color }) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: 1, background: color }} />
+                <span style={{ fontSize: 9, color: C.muted }}>{name.slice(0,3)} {g}g</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* stat tiles row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        <Card>
+          <StatTile label="Sleep" value={sleep.score} unit="/ 100" sub={`${sleep.hours}h · ${sleep.date}`} color={C.info} icon="sleep"
+            badge={<Chip label={sleep.label} color={C.warning} />} />
+          {/* mini sleep stage bar */}
+          <div style={{ marginTop: 10, height: 4, borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
+            <div style={{ flex: sleep.stages.deep,  background: C.primary }} />
+            <div style={{ flex: sleep.stages.rem,   background: C.info }} />
+            <div style={{ flex: sleep.stages.light, background: C.sub }} />
+            <div style={{ flex: sleep.stages.awake, background: C.warning }} />
+          </div>
+          <div style={{ marginTop: 4, display: 'flex', gap: 8 }}>
+            {[['Deep', C.primary, sleep.stages.deep], ['REM', C.info, sleep.stages.rem], ['Light', C.sub, sleep.stages.light]].map(([l,c,v]) => (
+              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <div style={{ width: 5, height: 5, borderRadius: 1, background: c }} />
+                <span style={{ fontSize: 9, color: C.muted }}>{l} {v}%</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <StatTile label="BMI" value={bmi.value} sub={`${bmi.weight}kg · ${bmi.height}cm`} color={C.success} icon="bmi"
+            badge={<Chip label={bmi.label} color={C.success} />} />
+          {/* bmi gauge */}
+          <div style={{ marginTop: 10, position: 'relative', height: 6, borderRadius: 3, background: `linear-gradient(to right, ${C.info}, ${C.success} 30%, ${C.warning} 62%, ${C.danger})` }}>
+            <div style={{
+              position: 'absolute', top: '50%', left: `${Math.min(100, Math.max(0, ((bmi.value - 16) / (34 - 16)) * 100))}%`,
+              transform: 'translate(-50%, -50%)', width: 12, height: 12, borderRadius: '50%',
+              background: C.card, border: `2px solid ${C.success}`,
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+            <span style={{ fontSize: 8, color: C.muted }}>16</span>
+            <span style={{ fontSize: 8, color: C.muted }}>34</span>
+          </div>
+        </Card>
+
+        <Card>
+          <StatTile label="Activity" value={activity.burn} unit="kcal" sub={`${activity.sessions} sessions today`} color={C.danger} icon="move" />
+          <MiniBar v={activity.burn} max={activity.goal} color={C.danger} h={5} />
+          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10, color: C.muted }}>Goal: {activity.goal} kcal</span>
+            <span style={{ fontSize: 10, color: C.muted }}>{Math.round((activity.burn/activity.goal)*100)}%</span>
+          </div>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: C.danger }}>
+              <Ic d={ICONS.heart} size={11} sw={2} />
+              <span style={{ fontSize: 10, color: C.muted }}>Avg HR · 62 bpm</span>
+            </div>
+            <HeartSparkline data={heartWeek} />
+          </div>
+        </Card>
+      </div>
+
+      {/* bottom row: week chart + food log + activity log */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <Card>
+          <Label>This week</Label>
+          <WeekChart week={week} goal={cal.goal} />
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+            <div>
+              <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Avg / day</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.primary, marginTop: 2 }}>
+                {Math.round(week.filter(d => d.cal > 0).reduce((s, d) => s + d.cal, 0) / week.filter(d => d.cal > 0).length).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Best day</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.warning, marginTop: 2 }}>2,340</div>
+              <div style={{ fontSize: 9, color: C.muted }}>Thursday</div>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Label style={{ marginBottom: 0 }}>Food log</Label>
+            <button onClick={() => onNav('fd')} style={{
+              fontSize: 10, color: C.primary, background: 'transparent', border: 'none',
+              cursor: 'pointer', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 3,
+            }}>
+              <Ic d={ICONS.plus} size={11} sw={2.5} /> Add
+            </button>
+          </div>
+          {foods.slice(0, 4).map(f => <FoodRow key={f.id} {...f} />)}
+          <button onClick={() => onNav('fd')} style={{
+            marginTop: 8, width: '100%', padding: '7px 0', background: C.pDim, color: C.primary,
+            border: '1px solid color-mix(in oklch, var(--primary) 30%, transparent)', borderRadius: 4,
+            fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em',
+          }}>
+            See all {foods.length} entries
+          </button>
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Label style={{ marginBottom: 0 }}>Activity log</Label>
+            <button onClick={() => onNav('ac')} style={{
+              fontSize: 10, color: C.danger, background: 'transparent', border: 'none',
+              cursor: 'pointer', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 3,
+            }}>
+              <Ic d={ICONS.plus} size={11} sw={2.5} /> Log
+            </button>
+          </div>
+          {acts.map(a => <ActRow key={a.id} {...a} />)}
+          {/* Activity ring */}
+          <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+            {[['Burned', activity.burn, C.danger], ['Goal', activity.goal, C.border]].map(([l,v,c]) => (
+              <div key={l} style={{ flex: 1, padding: '8px 10px', background: C.card2, borderRadius: 4 }}>
+                <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{l}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: c, marginTop: 2 }}>{v}</div>
+                <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => onNav('ac')} style={{
+            marginTop: 8, width: '100%', padding: '7px 0',
+            background: `color-mix(in oklch, ${C.danger} 10%, transparent)`,
+            color: C.danger, border: `1px solid color-mix(in oklch, ${C.danger} 30%, transparent)`, borderRadius: 4,
+            fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em',
+          }}>
+            + Log workout
+          </button>
+        </Card>
+      </div>
+
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   NUTRITION PANEL
+══════════════════════════════════════════════════════ */
+
+const MEAL_GROUPS = [
+  { id: 'breakfast', label: 'Breakfast', icon: 'sun' },
+  { id: 'lunch',     label: 'Lunch',     icon: 'eat' },
+  { id: 'dinner',    label: 'Dinner',    icon: 'moon2' },
+  { id: 'snacks',    label: 'Snacks',    icon: 'zap' },
+];
+
+const FOOD_LOG = [
+  { id: 1, meal: 'breakfast', name: 'Kaya Toast',     cal: 210, pro: 5,  carb: 36, fat: 7,  serving: '2 slices' },
+  { id: 2, meal: 'breakfast', name: 'Teh Tarik',      cal: 130, pro: 3,  carb: 22, fat: 4,  serving: '1 cup' },
+  { id: 3, meal: 'breakfast', name: 'Milo',           cal: 140, pro: 4,  carb: 28, fat: 2,  serving: '1 cup' },
+  { id: 4, meal: 'lunch',     name: 'Chicken Rice',   cal: 520, pro: 32, carb: 68, fat: 12, serving: '1 plate' },
+  { id: 5, meal: 'dinner',    name: 'Nasi Lemak',     cal: 840, pro: 28, carb: 80, fat: 45, serving: '1 set' },
+];
+
+const SEARCH_RESULT = {
+  name: 'Laksa', serving: '1 bowl (400g)',
+  cal: 589, pro: 24, carb: 72, fat: 21, fibre: 3,
+  source: 'Health Promotion Board SG',
+};
+
+const MACROS_GOALS = { cal: 2200, pro: 150, carb: 275, fat: 73 };
+const MACROS_TODAY = { cal: 1840, pro: 72, carb: 234, fat: 70 };
+
+function NutritionSummaryBar() {
+  const { cal, pro, carb, fat } = MACROS_TODAY;
+  const g = MACROS_GOALS;
+  const remaining = g.cal - cal;
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1,
+      background: C.border, borderRadius: 8, overflow: 'hidden', marginBottom: 16,
+    }}>
+      {[
+        { label: 'Consumed', val: cal.toLocaleString(), unit: 'kcal', color: C.primary, pct: cal/g.cal },
+        { label: 'Remaining', val: Math.max(0, remaining).toLocaleString(), unit: 'kcal', color: C.success, pct: remaining/g.cal },
+        { label: 'Protein',  val: `${pro}g`, unit: `/ ${g.pro}g`, color: C.c1, pct: pro/g.pro },
+        { label: 'Carbs · Fat', val: `${carb}g · ${fat}g`, unit: `/ ${g.carb}g · ${g.fat}g`, color: C.warning, pct: carb/g.carb },
+      ].map(({ label, val, unit, color, pct: p }) => (
+        <div key={label} style={{ background: C.card, padding: '12px 14px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, height: 3, width: `${Math.min(100, p*100)}%`, background: color, transition: 'width .4s' }} />
+          <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>{label}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1 }}>{val}</div>
+          <div style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>{unit}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MacroRings() {
+  const items = [
+    { label: 'Protein', val: MACROS_TODAY.pro, goal: MACROS_GOALS.pro, color: C.c1, kcal: MACROS_TODAY.pro * 4, unit: 'g' },
+    { label: 'Carbs',   val: MACROS_TODAY.carb, goal: MACROS_GOALS.carb, color: C.warning, kcal: MACROS_TODAY.carb * 4, unit: 'g' },
+    { label: 'Fat',     val: MACROS_TODAY.fat, goal: MACROS_GOALS.fat, color: C.danger, kcal: MACROS_TODAY.fat * 9, unit: 'g' },
+  ];
+  const cx = 28, cy = 28, r = 22, sw = 5, circ = 2 * Math.PI * r;
+
+  return (
+    <div style={{ display: 'flex', gap: 12 }}>
+      {items.map(({ label, val, goal, color, kcal }) => {
+        const pct = Math.min(1, val / goal);
+        const dash = pct * circ;
+        return (
+          <div key={label} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: C.card2, borderRadius: 6 }}>
+            <svg width={56} height={56} viewBox="0 0 56 56" style={{ flexShrink: 0 }}>
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.border} strokeWidth={sw} />
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={sw}
+                strokeDasharray={`${dash} ${circ - dash}`}
+                strokeDashoffset={circ * 0.25} strokeLinecap="round" />
+              <text x={cx} y={cy + 4} textAnchor="middle" fontSize={11} fontWeight={700}
+                fill={color} fontFamily="'Chakra Petch', sans-serif">{Math.round(pct * 100)}%</text>
+            </svg>
+            <div>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color, marginTop: 2 }}>{val}g</div>
+              <div style={{ fontSize: 9, color: C.muted }}>of {goal}g · {kcal} kcal</div>
+              <div style={{ marginTop: 5, height: 3, background: C.border, borderRadius: 2, overflow: 'hidden', width: 60 }}>
+                <div style={{ height: '100%', width: `${pct*100}%`, background: color, borderRadius: 2 }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SearchCard({ showResult, setShowResult }) {
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const doSearch = () => {
+    if (!q.trim()) return;
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setShowResult(true); }, 900);
+  };
+
+  const SUGGESTIONS = ['Chicken Rice', 'Milo', 'Nasi Lemak', 'Laksa', 'Roti Prata'];
+
+  return (
+    <Card style={{ marginBottom: 14, border: `1.5px solid color-mix(in oklch, ${C.border} 150%, transparent)` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <Label style={{ marginBottom: 0 }}>Search & log food</Label>
+        <span style={{ fontSize: 9, color: C.primary, background: C.pDim, borderRadius: 3, padding: '2px 6px', fontWeight: 600, letterSpacing: '0.05em' }}>AI-POWERED</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: C.card2, border: `1.5px solid color-mix(in oklch, ${C.border} 180%, transparent)`, borderRadius: 6, padding: '8px 12px', transition: 'border-color .15s' }}
+          onFocus={e => e.currentTarget.style.borderColor = C.primary}
+          onBlur={e => e.currentTarget.style.borderColor = C.border}>
+          <Ic d={ICONS.search} size={14} sw={2} style={{ color: C.muted, flexShrink: 0 }} />
+          <input value={q} onChange={e => setQ(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && doSearch()}
+            placeholder="e.g. Chicken rice, 1 plate…"
+            style={{ background: 'transparent', border: 'none', outline: 'none', color: C.fg, fontSize: 13, flex: 1, fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }} />
+        </div>
+        <button onClick={doSearch} disabled={loading} style={{
+          padding: '0 18px', borderRadius: 6, background: C.primary, color: 'var(--icon-on-primary)',
+          border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+          fontFamily: 'var(--font-sans)', letterSpacing: '0.05em', whiteSpace: 'nowrap',
+          opacity: loading ? 0.7 : 1, transition: 'opacity .15s',
+        }}>
+          {loading ? '…' : 'Search'}
+        </button>
+      </div>
+      {/* suggestions */}
+      {!showResult && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+          <span style={{ fontSize: 10, color: C.muted, alignSelf: 'center', marginRight: 2 }}>Try:</span>
+          {SUGGESTIONS.map(s => (
+            <button key={s} onClick={() => { setQ(s); setShowResult(false); }} style={{
+              padding: '3px 10px', borderRadius: 99, fontSize: 11, border: `1px solid ${C.border}`,
+              background: 'transparent', color: C.sub, cursor: 'pointer',
+              fontFamily: 'var(--font-sans)', letterSpacing: '0.03em', transition: 'border-color .12s, color .12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+      {/* search result */}
+      {showResult && (
+        <div style={{ marginTop: 4, border: `1.5px solid ${C.primary}`, borderRadius: 6, padding: 14, background: `color-mix(in oklch, ${C.primary} 8%, var(--card2))` }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{SEARCH_RESULT.name}</div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{SEARCH_RESULT.serving}</div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: C.primary, lineHeight: 1 }}>{SEARCH_RESULT.cal}</div>
+              <div style={{ fontSize: 10, color: C.muted }}>kcal</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
+            {[
+              { l: 'Protein', v: SEARCH_RESULT.pro, u: 'g', c: C.c1 },
+              { l: 'Carbs',   v: SEARCH_RESULT.carb, u: 'g', c: C.warning },
+              { l: 'Fat',     v: SEARCH_RESULT.fat,  u: 'g', c: C.danger },
+              { l: 'Fibre',   v: SEARCH_RESULT.fibre, u: 'g', c: C.sub },
+            ].map(({ l, v, u, c }) => (
+              <div key={l} style={{ background: C.card2, borderRadius: 5, padding: '8px 6px', textAlign: 'center' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}{u}</div>
+                <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 10, color: C.muted, background: C.card2, borderRadius: 3, padding: '2px 7px', border: `1px solid ${C.border}` }}>est.</span>
+              <span style={{ fontSize: 10, color: C.muted }}>{SEARCH_RESULT.source}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowResult(false)} style={{
+                padding: '5px 12px', borderRadius: 5, fontSize: 11, border: `1px solid ${C.border}`,
+                background: 'transparent', color: C.sub, cursor: 'pointer', fontFamily: 'var(--font-sans)',
+              }}>Discard</button>
+              <button onClick={() => setShowResult(false)} style={{
+                padding: '5px 14px', borderRadius: 5, fontSize: 11, fontWeight: 700,
+                background: C.primary, color: 'var(--icon-on-primary)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+              }}>Add to log</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function FoodLogGroup({ meal, items, onRemove }) {
+  const totalCal = items.reduce((s, f) => s + f.cal, 0);
+  const mealColors = { breakfast: C.warning, lunch: C.primary, dinner: C.info, snacks: C.danger };
+  const color = mealColors[meal.id];
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ width: 22, height: 22, borderRadius: 5, background: `color-mix(in oklch, ${color} 15%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+          <Ic d={ICONS[meal.icon]} size={11} sw={2} />
+        </div>
+        <span style={{ fontSize: 11, fontWeight: 600, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{meal.label}</span>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color }}>{totalCal} kcal</span>
+      </div>
+      {items.map((f, i) => {
+        const maxCal = Math.max(...items.map(x => x.cal));
+        const barW = Math.round((f.cal / maxCal) * 100);
+        return (
+          <div key={f.id} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '9px 12px', borderRadius: 6, marginBottom: 4,
+            background: C.card, border: `1px solid ${C.border}`,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* calorie bar bg */}
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barW}%`, background: `color-mix(in oklch, ${color} 6%, transparent)`, pointerEvents: 'none' }} />
+            <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
+                {f.serving} · P {f.pro}g · C {f.carb}g · F {f.fat}g
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0, position: 'relative' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color }}>{f.cal}</div>
+              <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+            </div>
+            <button onClick={() => onRemove(f.id)} style={{
+              width: 24, height: 24, borderRadius: 4, border: `1px solid ${C.border}`,
+              background: 'transparent', cursor: 'pointer', color: C.muted,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, position: 'relative', fontSize: 14, lineHeight: 1,
+              transition: 'background .12s, color .12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = `color-mix(in oklch, ${C.danger} 12%, transparent)`; e.currentTarget.style.color = C.danger; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.muted; }}>
+              ×
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function NutritionPanel() {
+  const [showResult, setShowResult] = useState(false);
+  const [log, setLog] = useState(FOOD_LOG);
+
+  const remove = (id) => setLog(prev => prev.filter(f => f.id !== id));
+
+  return (
+    <div style={{ padding: 20 }}>
+      <NutritionSummaryBar />
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <SearchCard showResult={showResult} setShowResult={setShowResult} />
+        </div>
+        <Card>
+          <Label>Daily macro progress</Label>
+          <MacroRings />
+        </Card>
+        <Card>
+          <Label>Calorie breakdown</Label>
+          {/* Stacked bar showing macro kcal contributions */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', height: 20, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
+              {[
+                { label: 'Protein', kcal: MACROS_TODAY.pro * 4, color: C.c1 },
+                { label: 'Carbs',   kcal: MACROS_TODAY.carb * 4, color: C.warning },
+                { label: 'Fat',     kcal: MACROS_TODAY.fat * 9,  color: C.danger },
+              ].map(({ label, kcal, color }) => {
+                const total = MACROS_TODAY.pro*4 + MACROS_TODAY.carb*4 + MACROS_TODAY.fat*9;
+                return <div key={label} style={{ flex: kcal/total, background: color, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontWeight: 700 }}>{Math.round(kcal/total*100)}%</span>
+                </div>;
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              {[
+                { label: 'Protein', kcal: MACROS_TODAY.pro * 4, color: C.c1 },
+                { label: 'Carbs',   kcal: MACROS_TODAY.carb * 4, color: C.warning },
+                { label: 'Fat',     kcal: MACROS_TODAY.fat * 9,  color: C.danger },
+              ].map(({ label, kcal, color }) => (
+                <div key={label} style={{ flex: 1, padding: '8px 10px', background: C.card2, borderRadius: 5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: 1, background: color }} />
+                    <span style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color }}>{kcal}</div>
+                  <div style={{ fontSize: 9, color: C.muted }}>kcal</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 11, color: C.muted }}>Total logged</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: C.primary }}>{MACROS_TODAY.cal} <span style={{ fontSize: 10, fontWeight: 400, color: C.muted }}>kcal</span></span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Food log */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.muted }}>
+          Today's log · {log.length} items
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.primary }}>{log.reduce((s, f) => s + f.cal, 0).toLocaleString()} kcal total</div>
+      </div>
+
+      {MEAL_GROUPS.map(meal => {
+        const items = log.filter(f => f.meal === meal.id);
+        if (!items.length) return null;
+        return <FoodLogGroup key={meal.id} meal={meal} items={items} onRemove={remove} />;
+      })}
+
+      {log.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted }}>
+          <div style={{ fontSize: 24, opacity: 0.3, marginBottom: 8 }}>—</div>
+          <div style={{ fontSize: 13 }}>No food logged yet. Search above to add items.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Placeholder panels ── */
+const PlaceholderPanel = ({ label }) => (
+  <div style={{ padding: 40, textAlign: 'center', color: C.muted }}>
+    <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.3 }}>—</div>
+    <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
+    <div style={{ fontSize: 12, marginTop: 6, opacity: 0.6 }}>Panel not shown in this mockup</div>
+  </div>
+);
+
+/* ── Sidebar ── */
+function Sidebar({ tab, onTab, collapsed, onToggle, theme, onTheme }) {
+  return (
+    <aside style={{
+      width: collapsed ? 54 : 196, minHeight: '100%',
+      background: C.surface, borderRight: `1px solid ${C.border}`,
+      display: 'flex', flexDirection: 'column',
+      transition: 'width .2s', flexShrink: 0, overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '14px 13px' : '14px 14px', borderBottom: `1px solid ${C.border}`, minHeight: 52 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 6, background: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Ic d={ICONS.fire} size={13} sw={2.5} style={{ color: 'var(--icon-on-primary)' }} />
+        </div>
+        {!collapsed && <span style={{ fontWeight: 700, fontSize: 13, color: C.fg, whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>HealthTrack SG</span>}
+      </div>
+      <nav style={{ flex: 1, padding: '8px 4px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {NAV.map(({ id, label, icon }) => {
+          const active = tab === id;
+          return (
+            <button key={id} onClick={() => onTab(id)} title={collapsed ? label : ''} style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '8px 10px', borderRadius: 5, border: 'none', cursor: 'pointer',
+              background: active ? `color-mix(in oklch, ${C.primary} 12%, transparent)` : 'transparent',
+              color: active ? C.primary : C.sub, width: '100%', textAlign: 'left',
+              transition: 'background .12s, color .12s',
+            }}>
+              <Ic d={ICONS[icon]} size={15} sw={2} />
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: active ? 600 : 400, flex: 1, whiteSpace: 'nowrap' }}>{label}</span>}
+              {!collapsed && active && <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.primary }} />}
+            </button>
+          );
+        })}
+      </nav>
+      <div style={{ padding: '8px 4px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <button onClick={onTheme} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: 'transparent', color: C.muted, width: '100%' }}>
+          <Ic d={theme === 'dark' ? ICONS.sun : ICONS.moon} size={15} sw={2} />
+          {!collapsed && <span style={{ fontSize: 12 }}>Light mode</span>}
+        </button>
+        <button onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: 'transparent', color: C.muted, width: '100%' }}>
+          <Ic d={collapsed ? ICONS.chevR : ICONS.chevL} size={15} sw={2} />
+          {!collapsed && <span style={{ fontSize: 12 }}>Collapse</span>}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ── Top bar ── */
+function TopBar({ tab, onGoals }) {
+  const cur = NAV.find(n => n.id === tab);
+  return (
+    <div style={{
+      height: 52, borderBottom: `1px solid ${C.border}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 20px', background: C.surface, flexShrink: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>{cur?.label}</span>
+        <span style={{ fontSize: 11, color: C.muted }}>Monday, 20 April 2026</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button onClick={onGoals} style={{
+          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 5,
+          border: `1px solid ${C.border}`, background: 'transparent', color: C.sub,
+          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em',
+          transition: 'border-color .15s, color .15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
+          <Ic d={ICONS.target} size={12} sw={2} /> Goals
+        </button>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--icon-on-primary)' }}>J</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Root app ── */
+function App() {
+  const [tab, setTab] = useState('db');
+  const [collapsed, setCollapsed] = useState(false);
+
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "theme": "dark",
+    "showAlert": true,
+    "accentColor": "lime"
+  }/*EDITMODE-END*/;
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+
+  // apply theme class to root element
+  React.useEffect(() => {
+    document.documentElement.classList.toggle('dark', tweaks.theme === 'dark');
+    document.body.style.background = 'var(--bg)';
+    document.body.style.color = 'var(--fg)';
+  }, [tweaks.theme]);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  // listen for edit mode toggle
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const setTweak = (key, val) => {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  };
+
+  return (
+    <div style={{ height: '100svh', display: 'flex', overflow: 'hidden', background: C.bg }}>
+      <Sidebar tab={tab} onTab={setTab} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} theme={tweaks.theme} onTheme={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <TopBar tab={tab} onGoals={() => {}} />
+        <main style={{ flex: 1, overflowY: 'auto' }}>
+          {tab === 'db' && <DashboardPanel onNav={setTab} />}
+          {tab === 'fd' && <NutritionPanel />}
+          {tab !== 'db' && tab !== 'fd' && <PlaceholderPanel label={NAV.find(n => n.id === tab)?.label} />}
+        </main>
+      </div>
+
+      {/* Tweaks panel */}
+      {tweaksOpen && (
+        <div style={{
+          position: 'fixed', bottom: 20, right: 20, width: 240,
+          background: C.card, border: `1px solid ${C.border}`, borderRadius: 8,
+          padding: 16, zIndex: 999, boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Tweaks</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: C.sub, marginBottom: 6 }}>Dark mode</div>
+              <button onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')} style={{
+                width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: tweaks.theme === 'dark' ? C.primary : C.card2, position: 'relative', transition: 'background .2s',
+              }}>
+                <div style={{ position: 'absolute', top: 2, left: tweaks.theme === 'dark' ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: C.sub, marginBottom: 6 }}>Show calorie alert</div>
+              <button onClick={() => setTweak('showAlert', !tweaks.showAlert)} style={{
+                width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: tweaks.showAlert ? C.primary : C.card2, position: 'relative', transition: 'background .2s',
+              }}>
+                <div style={{ position: 'absolute', top: 2, left: tweaks.showAlert ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: C.sub, marginBottom: 6 }}>Sidebar collapsed</div>
+              <button onClick={() => setCollapsed(c => !c)} style={{
+                width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: collapsed ? C.primary : C.card2, position: 'relative', transition: 'background .2s',
+              }}>
+                <div style={{ position: 'absolute', top: 2, left: collapsed ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: C.sub, marginBottom: 6 }}>Active tab</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {NAV.map(n => (
+                  <button key={n.id} onClick={() => setTab(n.id)} style={{
+                    padding: '3px 8px', borderRadius: 4, fontSize: 10, cursor: 'pointer',
+                    border: `1px solid ${tab === n.id ? C.primary : C.border}`,
+                    background: tab === n.id ? C.pDim : 'transparent',
+                    color: tab === n.id ? C.primary : C.sub,
+                    fontFamily: 'var(--font-sans)', letterSpacing: '0.04em',
+                  }}>{n.label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
